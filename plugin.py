@@ -53,7 +53,7 @@ import Domoticz
 Package = True
 
 try:
-    import requests,json,subprocess
+    import requests,json
 except ImportError as e:
     Package = False
 
