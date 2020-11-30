@@ -1,6 +1,13 @@
 Please use my Tibber invite code, then we both get SEK 500, to use in Tibber shop.  
 https://tibber.com/se/invite/8af85f51
 ---
+Create a folder with name "NIBEUplink" in "domoticz/plugins"
+Put plugin.py, requirements.txt in that folder
+
+or
+
+Run in domoticz/plugins "sudo git clone https://github.com/flopp999/Tibber-Domoticz.git Tibber"
+---
 You need to have some information to be able to use this plugin:  
 [Identifier](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
 [Secret](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
