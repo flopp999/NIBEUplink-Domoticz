@@ -1,6 +1,6 @@
 You need to have some information to be able to use this plugin:  
-Identifier  https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#identifier-and-scret
-Secret  https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#identifier-and-scret
+[Identifier](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#identifier-and-secret)
+Secret  https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#identifier-and-secret
 URL  
 System ID  
 Extra charge from your electricity company  
@@ -10,4 +10,4 @@ Create an application under My Applications
 Copy Identifier and Secret, paste to NIBEUplink hardware in Domoticz  
 To get the refreshtoken you need to  
 
-# Identifier and Scret
+# Identifier and Secret
