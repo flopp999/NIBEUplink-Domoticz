@@ -1,4 +1,4 @@
-Please use my Tibber invite code, then we both get SEK 500, to use in Tibber shop.
+Please use my Tibber invite code, then we both get SEK 500, to use in Tibber shop.  
 https://tibber.com/se/invite/8af85f51
 
 You need to have some information to be able to use this plugin:  
