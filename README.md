@@ -9,6 +9,7 @@ You need to have some information to be able to use this plugin:
 # Identifier, Secret and URL
 Login to [NIBE Uplink API](https://api.nibeuplink.com/)  
 Create an application under My Applications  
+For Callback URL use "https://api.nibeuplink.com/"  
 Copy Identifier, Secret and Callback URL, paste to NIBEUplink hardware in Domoticz  
 
 # System ID
@@ -20,3 +21,5 @@ Copy your System ID and paste to NIBEUplink hardware in Domoticz
 You need to add the total extra charge your electricity company have, without taxes
 
 # Access code
+You need to create an Access code before first use  
+https://api.nibeuplink.com/oauth/authorize?client_id=[IDENTIFIER]&scope=READSYSTEM&state=x&redirect_uri=https://api.nibeuplink.com/&response_type=code
