@@ -22,4 +22,4 @@ You need to add the total extra charge your electricity company have, without ta
 
 # Access code
 You need to create an Access code before first use  
-https://api.nibeuplink.com/oauth/authorize?client_id=[IDENTIFIER]&scope=READSYSTEM&state=x&redirect_uri=https://api.nibeuplink.com/&response_type=code
+https://api.nibeuplink.com/oauth/authorize?client_id=yyyyyy&scope=READSYSTEM&state=x&redirect_uri=https://api.nibeuplink.com/&response_type=code
