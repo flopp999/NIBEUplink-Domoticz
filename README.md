@@ -1,10 +1,10 @@
 # NibeUplink-Domoticz
-You need to have some information to be able to use this plugin:
-Identifier
-Secret
-URL
-System ID
-Extra charge from your electricity company
+You need to have some information to be able to use this plugin:  
+Identifier  
+Secret  
+URL  
+System ID  
+Extra charge from your electricity company  
 
 Login to NIBE Uplink API https://api.nibeuplink.com/  
 Create an application under My Applications  
