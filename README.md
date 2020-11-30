@@ -1,12 +1,12 @@
 You need to have some information to be able to use this plugin:  
 [Identifier](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
 [Secret](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
-[URL](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
+[Callback URL](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-Callback-URL)  
 [System ID](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#System-ID)  
 [Charge from your electricity company](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Charge-from-electricity-company)  
 [Access code](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Access-code)
 
-# Identifier, Secret and URL
+# Identifier, Secret and Callback URL
 Login to [NIBE Uplink API](https://api.nibeuplink.com/)  
 Create an application under My Applications  
 For Callback URL use "h<span>ttps://a<span>pi.nib<span>euplink.com/"  
