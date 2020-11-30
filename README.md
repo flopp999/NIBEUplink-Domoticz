@@ -13,7 +13,7 @@ Copy Identifier, Secret and Callback URL, paste to NIBEUplink hardware in Domoti
 
 # System ID
 Login to [NIBE Uplink](https://nibeuplink.com/)  
-When logged in, look at the address bar, https://www.<span>nibeuplink.com/System/xxxxxx/Status/Overview, xxxxxx is your System ID
+When logged in, look at the address bar, https:/<span>/www.<span>nibeuplink.com/System/xxxxxx/Status/Overview, xxxxxx is your System ID
 Copy your System ID and paste to NIBEUplink hardware in Domoticz  
 
 # Charge from electricity company
