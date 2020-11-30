@@ -9,7 +9,7 @@ You need to have some information to be able to use this plugin:
 # Identifier, Secret and URL
 Login to [NIBE Uplink API](https://api.nibeuplink.com/)  
 Create an application under My Applications  
-For Callback URL use "https://api.nibeuplink.com/"  
+For Callback URL use "h<span>ttps://a<span>pi.nib<span>euplink.com/"  
 Copy Identifier, Secret and Callback URL, paste to NIBEUplink hardware in Domoticz  
 
 # System ID
