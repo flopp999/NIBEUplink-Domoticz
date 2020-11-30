@@ -1,6 +1,6 @@
 You need to have some information to be able to use this plugin:  
-Identifier  
-Secret  
+Identifier  https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#identifier-and-scret
+Secret  https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#identifier-and-scret
 URL  
 System ID  
 Extra charge from your electricity company  
