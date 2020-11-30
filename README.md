@@ -5,7 +5,6 @@ Secret
 URL
 System ID
 Extra charge from your electricity company
-h
 
 Login to NIBE Uplink API https://api.nibeuplink.com/  
 Create an application under My Applications  
