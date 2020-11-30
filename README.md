@@ -1,7 +1,7 @@
 You need to have some information to be able to use this plugin:  
-[Identifier](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)
-[Secret](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)
-[URL](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)
+[Identifier](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
+[Secret](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
+[URL](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
 [System ID](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#System-ID)  
 [Extra charge from your electricity company](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Charge-from-electricity-company)  
 
