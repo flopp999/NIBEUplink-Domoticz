@@ -4,7 +4,7 @@ You need to have some information to be able to use this plugin:
 [URL](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
 [System ID](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#System-ID)  
 [Charge from your electricity company](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Charge-from-electricity-company)  
-
+[Access code](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Access-code)
 
 # Identifier, Secret and URL
 Login to [NIBE Uplink API](https://api.nibeuplink.com/)  
@@ -18,3 +18,5 @@ Copy your System ID and paste to NIBEUplink hardware in Domoticz
 
 # Charge from electricity company
 You need to add the total extra charge your electricity company have, without taxes
+
+# Access code
