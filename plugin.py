@@ -3,7 +3,7 @@
 # Author: flopp
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.6" author="flopp" version="0.6" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.61" author="flopp" version="0.61" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h3>Features</h3>
@@ -281,7 +281,7 @@ def CheckInternet():
     WriteToFile("Entered CheckInternet")
     try:
         WriteToFile("Try ping")
-        requests.get(url='http://www.google.com/', timeout=5)
+        requests.get(url='http://api.nibeuplink.com/', timeout=3)
         WriteToFile("Ping done")
         return True
     except requests.ConnectionError:
