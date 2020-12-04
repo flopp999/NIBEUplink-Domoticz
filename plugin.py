@@ -3,7 +3,7 @@
 # Author: flopp
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.62" author="flopp" version="0.62" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink2" name="NIBE Uplink 0.62" author="flopp" version="0.62" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h3>Features</h3>
@@ -81,33 +81,34 @@ class BasePlugin:
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onConnect(self, Connection, Status, Description):
-        if (Status == 0):
-            if Connection.Name == ("Get Code"):
-                data = "grant_type=authorization_code"
-                data += "&client_id="+Parameters["Username"]
-                data += "&client_secret="+Parameters["Mode2"]
-                data += "&code="+Parameters["Mode1"]
-                data += "&redirect_uri="+Parameters["Address"]
-                data += "&scope=READSYSTEM"
-                headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
-                Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
+        if CheckInternet() == True:
+            if (Status == 0):
+                if Connection.Name == ("Get Code"):
+                    data = "grant_type=authorization_code"
+                    data += "&client_id="+Parameters["Username"]
+                    data += "&client_secret="+Parameters["Mode2"]
+                    data += "&code="+Parameters["Mode1"]
+                    data += "&redirect_uri="+Parameters["Address"]
+                    data += "&scope=READSYSTEM"
+                    headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
+                    Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
-            if Connection.Name == ("Get Token"):
-                if len(Parameters["Mode3"]) > 50:
-                    self.reftoken = Parameters["Mode3"]
-                data = "grant_type=refresh_token"
-                data += "&client_id="+Parameters["Username"]
-                data += "&client_secret="+Parameters["Mode2"]
-                data += "&refresh_token="+self.reftoken
+                if Connection.Name == ("Get Token"):
+                    if len(Parameters["Mode3"]) > 50:
+                        self.reftoken = Parameters["Mode3"]
+                    data = "grant_type=refresh_token"
+                    data += "&client_id="+Parameters["Username"]
+                    data += "&client_secret="+Parameters["Mode2"]
+                    data += "&refresh_token="+self.reftoken
 
-                headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
-                Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
+                    headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
+                    Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
-            if Connection.Name == ("Get Data"):
-                self.loop = 0
-                for category in ["STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO"]:
-                    headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
-                    Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+Parameters["Mode4"]+'/serviceinfo/categories/'+category, 'Headers': headers})
+                if Connection.Name == ("Get Data"):
+                    self.loop = 0
+                    for category in ["STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO"]:
+                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+Parameters["Mode4"]+'/serviceinfo/categories/'+category, 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
