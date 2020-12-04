@@ -3,7 +3,7 @@
 # Author: flopp
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.61" author="flopp" version="0.61" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink2" name="NIBE Uplink 0.62" author="flopp" version="0.62" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h3>Features</h3>
@@ -53,7 +53,7 @@ import Domoticz
 Package = True
 
 try:
-    import requests,json
+    import requests,json,os
 except ImportError as e:
     Package = False
 
@@ -80,9 +80,6 @@ class BasePlugin:
         self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
-    def onStop(self):
-        Domoticz.Log('onStop')
-
     def onConnect(self, Connection, Status, Description):
         if (Status == 0):
             if Connection.Name == ("Get Code"):
@@ -102,6 +99,7 @@ class BasePlugin:
                 data += "&client_id="+Parameters["Username"]
                 data += "&client_secret="+Parameters["Mode2"]
                 data += "&refresh_token="+self.reftoken
+
                 headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
                 Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
@@ -113,6 +111,7 @@ class BasePlugin:
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
+
         if (Status == 400):
             Domoticz.Error(str("Something went wrong"))
 
@@ -132,7 +131,6 @@ class BasePlugin:
                 self.token = json.loads(self.token)["access_token"]
                 self.GetToken.Disconnect()
                 self.GetData.Connect()
-
 
         if Connection.Name == ("Get Data"):
             if (Status == 200):
@@ -203,9 +201,6 @@ def onStart():
     global _plugin
     _plugin.onStart()
 
-def onStop():
-    _plugin.onStop()
-
 def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
     if (ID in Devices):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
@@ -262,8 +257,9 @@ def CheckInternet():
 
 def WriteToFile(text):
     if Parameters["Mode6"] == "Yes":
+        dir = os.path.dirname(os.path.realpath(__file__))
         timenow = (datetime.now())
-        file = open("plugins/NibeUplink/Nibe.log","a")
+        file = open(dir+"/Nibe.log","a")
         file.write(str(timenow)+" "+text+"\n")
         file.close()
 
@@ -273,12 +269,6 @@ def onConnect(Connection, Status, Description):
 
 def onMessage(Connection, Data):
     _plugin.onMessage(Connection, Data)
-
-def onCommand(Unit, Command, Level, Hue):
-    _plugin.onCommand(Unit, Command, Level, Hue)
-
-def onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile):
-    _plugin.onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile)
 
 def onHeartbeat():
     global _plugin
