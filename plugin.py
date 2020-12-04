@@ -72,25 +72,19 @@ class BasePlugin:
         return
 
     def onStart(self):
-#        Domoticz.Debugging(16 | 64)
         WriteToFile("onStart")
 
         self.GetCode = Domoticz.Connection(Name="Get Code", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         if len(Parameters["Mode3"]) < 50:
             self.GetCode.Connect() # Get a Token
         self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-#        self.GetToken.Connect() # Get a Token
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onStop(self):
         Domoticz.Log('onStop')
 
-#    def onDisconnect(self, Connection):
-#        Domoticz.Log('onDisconnect')
-
     def onConnect(self, Connection, Status, Description):
         if (Status == 0):
-#            Domoticz.Log("onConnect called")
             if Connection.Name == ("Get Code"):
                 data = "grant_type=authorization_code"
                 data += "&client_id="+Parameters["Username"]
@@ -99,7 +93,6 @@ class BasePlugin:
                 data += "&redirect_uri="+Parameters["Address"]
                 data += "&scope=READSYSTEM"
                 headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
-#                Domoticz.Log(str(data))
                 Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
             if Connection.Name == ("Get Token"):
@@ -109,7 +102,6 @@ class BasePlugin:
                 data += "&client_id="+Parameters["Username"]
                 data += "&client_secret="+Parameters["Mode2"]
                 data += "&refresh_token="+self.reftoken
-
                 headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
                 Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
@@ -119,11 +111,8 @@ class BasePlugin:
                     headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                     Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+Parameters["Mode4"]+'/serviceinfo/categories/'+category, 'Headers': headers})
 
-
     def onMessage(self, Connection, Data):
-#        Domoticz.Log(str(Data))
         Status = int(Data["Status"])
-
         if (Status == 400):
             Domoticz.Error(str("Something went wrong"))
 
@@ -134,7 +123,6 @@ class BasePlugin:
                 if len(Parameters["Mode3"]) < 50:
                     Domoticz.Log("Copy token to Hardware-NibeUplink-Refresh Token")
                     Domoticz.Log(str(self.reftoken))
-#                Parameters["Mode3"] = self.reftoken
                 self.GetCode.Disconnect()
                 self.GetToken.Connect()
 
@@ -142,7 +130,6 @@ class BasePlugin:
             if (Status == 200):
                 self.token = Data['Data'].decode('UTF-8')
                 self.token = json.loads(self.token)["access_token"]
-#                Domoticz.Log(str(self.token))
                 self.GetToken.Disconnect()
                 self.GetData.Connect()
 
@@ -151,16 +138,11 @@ class BasePlugin:
             if (Status == 200):
                 self.data = Data['Data'].decode('UTF-8')
                 self.data = json.loads(self.data)
-#                Domoticz.Log(str(self.data))
                 self.loop += 1
                 loop2 = 0
                 for each in self.data:
                     loop2 += 1
-#                        Domoticz.Log(str(each["title"])+" "+str(each["rawValue"])+" "+str(each["unit"]))
                     Unit = str(self.loop)+str(loop2)
-#                        Domoticz.Log(str(loop))
-#                        Domoticz.Log(str(loop2))
-#                        Domoticz.Log(str(Unit))
                     sValue = each["rawValue"]
                     nValue = 0
                     if each["unit"] == "°C" and sValue != -32768:
@@ -214,9 +196,6 @@ class BasePlugin:
             WriteToFile("onHeartbeat")
             self.Count = 0
 
-#                WriteToFile(str(vent[0]["displayValue"]))
-#                Devices[1].Update(0,str(vent[0]["displayValue"]))
-
 global _plugin
 _plugin = BasePlugin()
 
@@ -224,16 +203,10 @@ def onStart():
     global _plugin
     _plugin.onStart()
 
-
 def onStop():
     _plugin.onStop()
 
-
 def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
-#    Domoticz.Log(str(ID))
-#    Domoticz.Log(str(Devices))
-    # Make sure that the Domoticz device still exists (they can be deleted) before updating it
-#    Domoticz.Log(str(Unit))
     if (ID in Devices):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
@@ -276,7 +249,6 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
             else:
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
 
-
 def CheckInternet():
     WriteToFile("Entered CheckInternet")
     try:
@@ -307,9 +279,6 @@ def onCommand(Unit, Command, Level, Hue):
 
 def onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile):
     _plugin.onNotification(Name, Subject, Text, Status, Priority, Sound, ImageFile)
-
-#def onDisconnect(Connection):
-#    _plugin.onDisconnect(Connection)
 
 def onHeartbeat():
     global _plugin
