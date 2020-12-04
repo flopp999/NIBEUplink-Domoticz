@@ -249,7 +249,7 @@ def CheckInternet():
     WriteToFile("Entered CheckInternet")
     try:
         WriteToFile("Try ping")
-        requests.get(url='http://api.nibeuplink.com/', timeout=3)
+        requests.get(url='https://api.nibeuplink.com/', timeout=3)
         WriteToFile("Ping done")
         return True
     except requests.ConnectionError:
