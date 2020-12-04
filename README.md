@@ -30,7 +30,7 @@ Copy your System ID and paste to NIBEUplink hardware in Domoticz
 
 # Charge from your electricity company
 You need to add the total extra charge your electricity company have, without taxes  
-e.g. Tibber have 1.59 at the moment  
+e.g. Tibber have SEK 1.55 at the moment  
 
 # Access code
 You need to create an Access code before first use  
