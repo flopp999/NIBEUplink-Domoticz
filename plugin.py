@@ -3,7 +3,7 @@
 # Author: flopp
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.64" author="flopp" version="0.64" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.65" author="flopp" version="0.65" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h3>Features</h3>
@@ -253,6 +253,12 @@ def CheckInternet():
         WriteToFile("Ping done")
         return True
     except:
+        if _plugin.GetCode.Connected():
+            _plugin.GetCode.Disconnect()
+        if _plugin.GetToken.Connected():
+            _plugin.GetToken.Disconnect()
+        if _plugin.GetData.Connected():
+           _plugin.GetData.Disconnect()
         WriteToFile("Internet is not available")
         return False
 
