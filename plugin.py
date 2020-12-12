@@ -3,7 +3,7 @@
 # Author: flopp
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.66" author="flopp" version="0.66" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.67" author="flopp" version="0.67" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h3>Features</h3>
@@ -136,6 +136,11 @@ class BasePlugin:
             if (Status == 200):
                 self.token = Data['Data'].decode('UTF-8')
                 self.token = json.loads(self.token)["access_token"]
+                dir = os.path.dirname(os.path.realpath(__file__))
+                data ={}
+                data['Refresh Token'] = self.token
+                with open(dir+'/NibeUplink.txt', 'w') as outfile:
+                    json.dump(data, outfile, indent=4)
                 self.GetToken.Disconnect()
                 self.GetData.Connect()
 
