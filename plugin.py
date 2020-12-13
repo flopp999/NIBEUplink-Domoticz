@@ -3,7 +3,7 @@
 # Author: flopp
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.67" author="flopp" version="0.67" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.68" author="flopp" version="0.68" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h3>Features</h3>
