@@ -3,7 +3,7 @@
 # Author: flopp
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.67" author="flopp" version="0.67" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.68" author="flopp" version="0.68" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h3>Features</h3>
@@ -31,13 +31,13 @@
         <h3>Configuration</h3>
     </description>
     <params>
-        <param field="Username" label="NIBE Uplink Identifier" width="320px" required="true"/>
-        <param field="Mode2" label="NIBE Uplink Secret" width="350px" required="true"/>
+        <param field="Username" label="NIBE Uplink Identifier" width="320px" required="true" default="Username"/>
+        <param field="Mode2" label="NIBE Uplink Secret" width="350px" required="true" default="Secret"/>
         <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
-        <param field="Mode1" label="NIBE Access Code" width="350px" required="true"/>
-        <param field="Address" label="NIBE Callback URL" width="950px" required="true"/>
-        <param field="Mode4" label="NIBE System ID" width="140px" required="true"/>
-        <param field="Mode5" label="Tibber charge" width="70px" default="1.59" required="true"/>
+        <param field="Mode1" label="NIBE Access Code" width="350px" required="true" default="Access Code"/>
+        <param field="Address" label="NIBE Callback URL" width="950px" required="true" default="URL"/>
+        <param field="Mode4" label="NIBE System ID" width="140px" required="true" default="ID"/>
+        <param field="Mode5" label="Electricity Company Charge" width="70px" default="0" required="true"/>
         <param field="Mode6" label="Debug to file (Nibe.log)" width="70px">
             <options>
                 <option label="Yes" value="Yes" />
@@ -53,7 +53,12 @@ import Domoticz
 Package = True
 
 try:
-    import requests,json,os
+    import requests,json,os,logging
+except ImportError as e:
+    Package = False
+
+try:
+    from logging.handlers import RotatingFileHandler
 except ImportError as e:
     Package = False
 
@@ -61,6 +66,12 @@ try:
     from datetime import datetime
 except ImportError as e:
     Package = False
+
+dir = os.path.dirname(os.path.realpath(__file__))
+logger = logging.getLogger("NIBE")
+logger.setLevel(logging.INFO)
+handler = RotatingFileHandler(dir+'/NIBEUplink.log', maxBytes=50000, backupCount=5)
+logger.addHandler(handler)
 
 class BasePlugin:
     enabled = False
@@ -72,35 +83,84 @@ class BasePlugin:
         return
 
     def onStart(self):
-        WriteToFile("onStart")
+        WriteDebug("onStart")
+        self.Ident = Parameters["Username"]
+        self.URL = Parameters["Address"]
+        self.Access = Parameters["Mode1"]
+        self.Secret = Parameters["Mode2"]
+        self.Refresh = Parameters["Mode3"]
+        self.SystemID = Parameters["Mode4"]
+        self.Charge = Parameters["Mode5"]
+        self.AllSettings = True
+
+        if len(self.Ident) < 32:
+            Domoticz.Log("Username too short")
+            WriteDebug("Username too short")
+            self.Ident = CheckFile("Ident")
+        else:
+            WriteFile("Ident",self.Ident)
+
+        if len(self.URL) < 26:
+            Domoticz.Log("URL too short")
+            WriteDebug("URL too short")
+            self.URL = CheckFile("URL")
+        else:
+            WriteFile("URL",self.URL)
+
+        if len(self.Access) < 370:
+            Domoticz.Log("Access Code too short")
+            WriteDebug("Access Code too short")
+            self.Access = CheckFile("Access")
+        else:
+            WriteFile("Access",self.Access)
+
+        if len(self.Secret) < 44:
+            Domoticz.Log("Secret too short")
+            WriteDebug("Secret too short")
+            self.Secret = CheckFile("Secret")
+        else:
+            WriteFile("Secret",self.Secret)
+
+        if len(self.Refresh) < 270:
+            Domoticz.Log("Refresh too short")
+            WriteDebug("Refresh too short")
+            self.Refresh = CheckFile("Refresh")
+        else:
+            WriteFile("Refresh",self.Refresh)
+
+        if len(self.SystemID) < 4:
+            Domoticz.Log("System ID too short")
+            WriteDebug("System ID too short")
+            self.SystemID = CheckFile("SystemID")
+        else:
+            WriteFile("SystemID",self.SystemID)
 
         self.GetCode = Domoticz.Connection(Name="Get Code", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-        if len(Parameters["Mode3"]) < 50:
+        if len(self.Refresh) < 50 and self.AllSettings == True:
             self.GetCode.Connect() # Get a Token
         self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onConnect(self, Connection, Status, Description):
-        if CheckInternet() == True:
+        if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
                 if Connection.Name == ("Get Code"):
                     data = "grant_type=authorization_code"
-                    data += "&client_id="+Parameters["Username"]
-                    data += "&client_secret="+Parameters["Mode2"]
-                    data += "&code="+Parameters["Mode1"]
-                    data += "&redirect_uri="+Parameters["Address"]
+                    data += "&client_id="+self.Ident
+                    data += "&client_secret="+self.Secret
+                    data += "&code="+self.Access
+                    data += "&redirect_uri="+self.URL
                     data += "&scope=READSYSTEM"
                     headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
                 if Connection.Name == ("Get Token"):
-                    if len(Parameters["Mode3"]) > 50:
-                        self.reftoken = Parameters["Mode3"]
+                    if len(self.Refresh) > 50:
+                        self.reftoken = self.Refresh
                     data = "grant_type=refresh_token"
-                    data += "&client_id="+Parameters["Username"]
-                    data += "&client_secret="+Parameters["Mode2"]
+                    data += "&client_id="+self.Ident
+                    data += "&client_secret="+self.Secret
                     data += "&refresh_token="+self.reftoken
-
                     headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
@@ -108,7 +168,7 @@ class BasePlugin:
                     self.loop = 0
                     for category in ["STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO"]:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
-                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+Parameters["Mode4"]+'/serviceinfo/categories/'+category, 'Headers': headers})
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category, 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
@@ -121,13 +181,13 @@ class BasePlugin:
                 _plugin.GetToken.Disconnect()
             if _plugin.GetData.Connected():
                 _plugin.GetData.Disconnect()
-                
+
         if Connection.Name == ("Get Code"):
             if (Status == 200):
                 self.reftoken = Data['Data'].decode('UTF-8')
                 self.reftoken = json.loads(self.reftoken)["refresh_token"]
-                if len(Parameters["Mode3"]) < 50:
-                    Domoticz.Log("Copy token to Hardware-NibeUplink-Refresh Token")
+                if len(self.Refresh) < 50:
+                    Domoticz.Log("Copy token to Setup->Hardware->NibeUplink->Refresh Token:")
                     Domoticz.Log(str(self.reftoken))
                 self.GetCode.Disconnect()
                 self.GetToken.Connect()
@@ -136,10 +196,10 @@ class BasePlugin:
             if (Status == 200):
                 self.token = Data['Data'].decode('UTF-8')
                 self.token = json.loads(self.token)["access_token"]
-                dir = os.path.dirname(os.path.realpath(__file__))
-                data ={}
-                data['Refresh Token'] = self.token
-                with open(dir+'/NibeUplink.txt', 'w') as outfile:
+                with open(dir+'/NIBEUplink.ini') as jsonfile:
+                    data = json.load(jsonfile)
+                data["Config"][0]["Access"] = self.token
+                with open(dir+'/NIBEUplink.ini', 'w') as outfile:
                     json.dump(data, outfile, indent=4)
                 self.GetToken.Disconnect()
                 self.GetData.Connect()
@@ -203,7 +263,7 @@ class BasePlugin:
         self.Count += 1
         if self.Count == 6:
             self.GetToken.Connect()
-            WriteToFile("onHeartbeat")
+            WriteDebug("onHeartbeat")
             self.Count = 0
 
 global _plugin
@@ -256,12 +316,47 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
             else:
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
 
+def CreateFile():
+    if not os.path.isfile(dir+'/NIBEUplink.ini'):
+        data = {}
+        data["Config"] = []
+        data["Config"].append({
+             "Access": "",
+             "Charge": "",
+             "Ident": "",
+             "Refresh": "",
+             "Secret": "",
+             "SystemID": "",
+             "URL": ""
+             })
+        with open(dir+'/NIBEUplink.ini', 'w') as outfile:
+            json.dump(data, outfile, indent=4)
+
+def CheckFile(Parameter):
+    Domoticz.Log(str(_plugin.AllSettings))
+    if os.path.isfile(dir+'/NIBEUplink.ini'):
+        with open(dir+'/NIBEUplink.ini') as jsonfile:
+            data = json.load(jsonfile)
+            data = data["Config"][0][Parameter]
+            if data == "":
+                _plugin.AllSettings = False
+            else:
+                return data
+
+def WriteFile(Parameter,text):
+    CreateFile()
+    with open(dir+'/NIBEUplink.ini') as jsonfile:
+        data = json.load(jsonfile)
+    data["Config"][0][Parameter] = text
+    with open(dir+'/NIBEUplink.ini', 'w') as outfile:
+        json.dump(data, outfile, indent=4)
+
 def CheckInternet():
-    WriteToFile("Entered CheckInternet")
+    WriteDebug("Entered CheckInternet")
     try:
-        WriteToFile("Try ping")
+        WriteDebug("Try ping")
         requests.get(url='https://api.nibeuplink.com/', timeout=15)
-        WriteToFile("Ping done")
+        WriteDebug("Ping done")
         return True
     except:
         if _plugin.GetCode.Connected():
@@ -269,17 +364,14 @@ def CheckInternet():
         if _plugin.GetToken.Connected():
             _plugin.GetToken.Disconnect()
         if _plugin.GetData.Connected():
-           _plugin.GetData.Disconnect()
-        WriteToFile("Internet is not available")
+            _plugin.GetData.Disconnect()
+        WriteDebug("Internet is not available")
         return False
 
-def WriteToFile(text):
+def WriteDebug(text):
     if Parameters["Mode6"] == "Yes":
-        dir = os.path.dirname(os.path.realpath(__file__))
         timenow = (datetime.now())
-        file = open(dir+"/Nibe.log","a")
-        file.write(str(timenow)+" "+text+"\n")
-        file.close()
+        logger.info(str(timenow)+" "+text)
 
 def onConnect(Connection, Status, Description):
     global _plugin
