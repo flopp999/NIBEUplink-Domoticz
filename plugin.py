@@ -3,7 +3,7 @@
 # Author: flopp
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.68" author="flopp" version="0.68" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.69" author="flopp" version="0.69" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h3>Features</h3>
@@ -172,16 +172,16 @@ class BasePlugin:
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
+        WriteDebug("Status = "+str(Status))
 
         if (Status == 400):
-            Domoticz.Error(str("Something went wrong"))
+            Domoticz.Error(str("Status 400"))
             if _plugin.GetCode.Connected():
                 _plugin.GetCode.Disconnect()
             if _plugin.GetToken.Connected():
                 _plugin.GetToken.Disconnect()
             if _plugin.GetData.Connected():
                 _plugin.GetData.Disconnect()
-
         if Connection.Name == ("Get Code"):
             if (Status == 200):
                 self.reftoken = Data['Data'].decode('UTF-8')
@@ -225,6 +225,7 @@ class BasePlugin:
                         sValue = (((sValue / 1000.0) + float(Parameters["Mode5"])) * 1.25)
                     if each["title"] == "time factor":
                         sValue = (sValue / 10.0)
+                        each["title"] = "electrical time factor"
                     if each["title"] == "electrical addition power":
                         sValue = (sValue / 100.0)
                     if each["title"] == "external adjustment":
@@ -255,7 +256,7 @@ class BasePlugin:
 
     def onHeartbeat(self):
         self.Count += 1
-        if self.Count == 6:
+        if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
             self.GetToken.Connect()
             WriteDebug("onHeartbeat")
             self.Count = 0
@@ -291,19 +292,19 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;times"}, Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif Name == "blocked":
             if ID == 21:
-                Domoticz.Device(Name="compressor "+Name, Unit=ID, TypeName="Text", Used=1, Description="ParameterID="+str(PID)).Create()
+                Domoticz.Device(Name="compressor "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
             if ID == 51:
-                Domoticz.Device(Name="addition "+Name, Unit=ID, TypeName="Text", Used=1, Description="ParameterID="+str(PID)).Create()
+                Domoticz.Device(Name="addition "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
         elif ID == 61 or ID == 71:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Text", Used=1, Description="ParameterID="+str(PID)).Create()
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
         elif ID == 41:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Text", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif ID == 72 or ID == 73:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Text", Used=1).Create()
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1).Create()
         elif ID == 74:
-            Domoticz.Device(Name="software "+Name, Unit=ID, TypeName="Text", Used=1).Create()
+            Domoticz.Device(Name="software "+Name, Unit=ID, TypeName="Custom", Used=1).Create()
         elif ID == 62:
-            Domoticz.Device(Name="smart price adaption "+Name, Unit=ID, TypeName="Text", Used=1, Description="ParameterID="+str(PID)).Create()
+            Domoticz.Device(Name="smart price adaption "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
         else:
             if Design == "":
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Description="ParameterID="+str(PID)).Create()
@@ -327,7 +328,6 @@ def CreateFile():
             json.dump(data, outfile, indent=4)
 
 def CheckFile(Parameter):
-    Domoticz.Log(str(_plugin.AllSettings))
     if os.path.isfile(dir+'/NIBEUplink.ini'):
         with open(dir+'/NIBEUplink.ini') as jsonfile:
             data = json.load(jsonfile)
@@ -348,9 +348,8 @@ def WriteFile(Parameter,text):
 def CheckInternet():
     WriteDebug("Entered CheckInternet")
     try:
-        WriteDebug("Try ping")
         requests.get(url='https://api.nibeuplink.com/', timeout=15)
-        WriteDebug("Ping done")
+        WriteDebug("Internet is OK")
         return True
     except:
         if _plugin.GetCode.Connected():
