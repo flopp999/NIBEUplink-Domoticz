@@ -227,12 +227,6 @@ class BasePlugin:
                         sValue = (sValue / 10.0)
                     if each["title"] == "electrical addition power":
                         sValue = (sValue / 100.0)
-                    if each["title"] == "blocked":
-                        nValue = int(sValue)
-                        if nValue == 0:
-                            sValue = "No"
-                        else:
-                            sValue = "Yes"
                     if each["title"] == "external adjustment":
                         nValue = int(sValue)
                         if nValue == 0:
