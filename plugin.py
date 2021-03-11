@@ -154,7 +154,6 @@ class BasePlugin:
                     data += "&redirect_uri="+self.URL
                     data += "&scope=READSYSTEM"
                     headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
-                    WriteDebug("innan code send")
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
                 if Connection.Name == ("Get Token"):
