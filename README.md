@@ -42,3 +42,6 @@ When this is done the address bar will look something like below
 "h<span>ttps://a<span>pi.nib<span>euplink.com/?code=ndfhj3u38ufhswhnerjqa5zEyN-RmBgkTCc&state=x"  
 Copy everything between "...code=" and "&state...", it is a very long code  
 Above example have access code "ndfhj3u38ufhswhnerjqa5zEyN-RmBgkTCc"
+
+
+Support me with a coffee https://www.buymeacoffee.com/flopp999 or use my Tibber link https://tibber.com/se/invite/8af85f51
