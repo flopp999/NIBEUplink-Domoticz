@@ -6,6 +6,7 @@
 <plugin key="NIBEUplink" name="NIBE Uplink 0.69" author="flopp" version="0.69" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
+        <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
             <li>..</li>
@@ -79,7 +80,7 @@ class BasePlugin:
     def __init__(self):
         self.token = ''
         self.loop = 0
-        self.Count = 0
+        self.Count = 5
         return
 
     def onStart(self):
@@ -145,6 +146,7 @@ class BasePlugin:
         if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
                 if Connection.Name == ("Get Code"):
+                    WriteDebug("Get Code")
                     data = "grant_type=authorization_code"
                     data += "&client_id="+self.Ident
                     data += "&client_secret="+self.Secret
@@ -152,9 +154,11 @@ class BasePlugin:
                     data += "&redirect_uri="+self.URL
                     data += "&scope=READSYSTEM"
                     headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
+                    WriteDebug("innan code send")
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
                 if Connection.Name == ("Get Token"):
+                    WriteDebug("Get Token")
                     if len(self.Refresh) > 50:
                         self.reftoken = self.Refresh
                     data = "grant_type=refresh_token"
@@ -162,17 +166,29 @@ class BasePlugin:
                     data += "&client_secret="+self.Secret
                     data += "&refresh_token="+self.reftoken
                     headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
+                    WriteDebug("innan token send")
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
                 if Connection.Name == ("Get Data"):
+                    WriteDebug("Get Data")
                     self.loop = 0
                     for category in ["STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO"]:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                        WriteDebug("innan data send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category, 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
         WriteDebug("Status = "+str(Status))
+
+        if (Status == 500):
+            Domoticz.Error(str("Status 500"))
+            if _plugin.GetCode.Connected():
+                _plugin.GetCode.Disconnect()
+            if _plugin.GetToken.Connected():
+                _plugin.GetToken.Disconnect()
+            if _plugin.GetData.Connected():
+                _plugin.GetData.Disconnect()
 
         if (Status == 400):
             Domoticz.Error(str("Status 400"))
@@ -182,8 +198,10 @@ class BasePlugin:
                 _plugin.GetToken.Disconnect()
             if _plugin.GetData.Connected():
                 _plugin.GetData.Disconnect()
-        if Connection.Name == ("Get Code"):
-            if (Status == 200):
+
+        if (Status == 200):
+
+            if Connection.Name == ("Get Code"):
                 self.reftoken = Data['Data'].decode('UTF-8')
                 self.reftoken = json.loads(self.reftoken)["refresh_token"]
                 if len(self.Refresh) < 50:
@@ -192,8 +210,7 @@ class BasePlugin:
                 self.GetCode.Disconnect()
                 self.GetToken.Connect()
 
-        if Connection.Name == ("Get Token"):
-            if (Status == 200):
+            if Connection.Name == ("Get Token"):
                 self.token = Data['Data'].decode('UTF-8')
                 self.token = json.loads(self.token)["access_token"]
                 with open(dir+'/NIBEUplink.ini') as jsonfile:
@@ -204,11 +221,22 @@ class BasePlugin:
                 self.GetToken.Disconnect()
                 self.GetData.Connect()
 
-        if Connection.Name == ("Get Data"):
-            if (Status == 200):
+            if Connection.Name == ("Get Data"):
                 self.data = Data['Data'].decode('UTF-8')
                 self.data = json.loads(self.data)
                 self.loop += 1
+                if self.loop == 6:
+                    SPAIDS=[]
+                    for ID in self.data:
+                        SPAIDS.append(ID["parameterId"])
+                    if 10069 not in SPAIDS:
+                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", "10069", "")
+                    if 44908 not in SPAIDS:
+                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", "44908", "")
+                    if 44896 not in SPAIDS:
+                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", "44896", "")
+                    if 44897 not in SPAIDS:
+                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", "44897", "")
                 loop2 = 0
                 for each in self.data:
                     loop2 += 1
@@ -228,24 +256,8 @@ class BasePlugin:
                         each["title"] = "electrical time factor"
                     if each["title"] == "electrical addition power":
                         sValue = (sValue / 100.0)
-                    if each["title"] == "external adjustment":
-                        nValue = int(sValue)
-                        if nValue == 0:
-                            sValue = "No"
-                        else:
-                            sValue = "Yes"
-                    if each["title"] == "status":
-                        nValue = int(sValue)
-                        if nValue == 30:
-                           sValue = "active"
-                    if each["title"] == "hot water":
-                        nValue = int(sValue)
-                        if nValue == 20:
-                            sValue = "economy"
-                        elif nValue == 30:
-                            sValue = "luxury"
-                        elif nValue == 1:
-                            sValue = "normal"
+                    if each["parameterId"] == 44896:
+                        sValue = (sValue / 10.0)
                     if int(Unit) > 70:
                         sValue = each["displayValue"]
 
@@ -269,6 +281,14 @@ def onStart():
     _plugin.onStart()
 
 def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
+    if PID == 44896:
+        ID = 61
+    if PID == 44897:
+        ID = 62
+    if PID == 44908:
+        ID = 63
+    if PID == 10069:
+        ID = 64
     if (ID in Devices):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
@@ -295,7 +315,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
                 Domoticz.Device(Name="compressor "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
             if ID == 51:
                 Domoticz.Device(Name="addition "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
-        elif ID == 61 or ID == 71:
+        elif ID == 71:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
         elif ID == 41:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
@@ -303,8 +323,12 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1).Create()
         elif ID == 74:
             Domoticz.Device(Name="software "+Name, Unit=ID, TypeName="Custom", Used=1).Create()
-        elif ID == 62:
+        elif ID == 63:
             Domoticz.Device(Name="smart price adaption "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
+        elif ID == 62:
+            Domoticz.Device(Name="comfort mode "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
+        elif ID == 61:
+            Domoticz.Device(Name="comfort mode "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
         else:
             if Design == "":
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Description="ParameterID="+str(PID)).Create()
@@ -348,7 +372,8 @@ def WriteFile(Parameter,text):
 def CheckInternet():
     WriteDebug("Entered CheckInternet")
     try:
-        requests.get(url='https://api.nibeuplink.com/', timeout=15)
+        WriteDebug("Ping")
+        requests.get(url='https://api.nibeuplink.com/', timeout=2)
         WriteDebug("Internet is OK")
         return True
     except:
