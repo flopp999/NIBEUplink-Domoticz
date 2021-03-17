@@ -8,6 +8,8 @@ or
 
 Run in domoticz/plugins "sudo git clone h<span>ttps://gith<span>ub.com/flopp999/NIBEUplink-Domoticz NIBEUplink"  
 
+Run "pip3 install -r requirements.txt" to install all packages that this plugin needs
+
 ---
 You need to have some information to be able to use this plugin:  
 [Identifier](https://github.com/flopp999/NIBEUplink-Domoticz/blob/main/README.md#Identifier,-Secret-and-URL)  
