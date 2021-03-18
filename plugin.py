@@ -259,7 +259,7 @@ class BasePlugin:
                         sValue = each["displayValue"]
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"])
-                if self.loop == 7:
+                if self.loop == 8:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
 
