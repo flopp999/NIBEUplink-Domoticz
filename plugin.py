@@ -27,12 +27,12 @@
         <h3>Configuration</h3>
     </description>
     <params>
-        <param field="Username" label="NIBE Uplink Identifier" width="320px" required="true" default="Username"/>
+        <param field="Username" label="NIBE Uplink Identifier" width="320px" required="true" default="Identifier"/>
         <param field="Mode2" label="NIBE Uplink Secret" width="350px" required="true" default="Secret"/>
         <param field="Address" label="NIBE Callback URL" width="950px" required="true" default="URL"/>
-        <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
         <param field="Mode1" label="NIBE Access Code" width="350px" required="true" default="Access Code"/>
         <param field="Mode4" label="NIBE System ID" width="140px" required="true" default="ID"/>
+        <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
         <param field="Mode5" label="Electricity Company Charge" width="70px" default="0" required="true"/>
         <param field="Mode6" label="Debug to file (Nibe.log)" width="70px">
             <options>
@@ -88,10 +88,11 @@ class BasePlugin:
         self.SystemID = Parameters["Mode4"]
         self.Charge = Parameters["Mode5"]
         self.AllSettings = True
+        self.Categories = []
 
         if len(self.Ident) < 32:
-            Domoticz.Log("Username too short")
-            WriteDebug("Username too short")
+            Domoticz.Log("Identifier too short")
+            WriteDebug("Identifier too short")
             self.Ident = CheckFile("Ident")
         else:
             WriteFile("Ident",self.Ident)
@@ -136,6 +137,7 @@ class BasePlugin:
             self.GetCode.Connect() # Get a Token
         self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onConnect(self, Connection, Status, Description):
         if CheckInternet() == True and self.AllSettings == True:
@@ -165,11 +167,20 @@ class BasePlugin:
 
                 if Connection.Name == ("Get Data"):
                     WriteDebug("Get Data")
+                    if self.Categories == []:
+                        self.GetData.Disconnect()
+                        self.GetCategories.Connect()
                     self.loop = 0
                     for category in ["STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2"]:
+#                    for category in self.Categories:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category, 'Headers': headers})
+
+                if Connection.Name == ("Get Categories"):
+                        WriteDebug("Get Categories")
+                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
@@ -203,6 +214,15 @@ class BasePlugin:
                     Domoticz.Log(str(self.reftoken))
                 self.GetCode.Disconnect()
                 self.GetToken.Connect()
+
+            if Connection.Name == ("Get Categories"):
+                self.Cat = Data['Data'].decode('UTF-8')
+                self.Cat = json.loads(self.Cat)
+                for each in self.Cat:
+                    self.Categories.append(each["categoryId"])
+                Domoticz.Log(str(self.Categories))
+                self.GetCategories.Disconnect()
+                self.GetData.Connect()
 
             if Connection.Name == ("Get Token"):
                 self.token = Data['Data'].decode('UTF-8')
