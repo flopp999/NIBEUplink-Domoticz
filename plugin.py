@@ -169,7 +169,7 @@ class BasePlugin:
                 if Connection.Name == ("Get Data"):
                     WriteDebug("Get Data")
                     self.loop = 0
-                    for category in ["STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO"]:
+                    for category in ["STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2"]:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category, 'Headers': headers})
