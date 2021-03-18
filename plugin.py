@@ -21,22 +21,20 @@
             <li>Unit 6x is SMART_PRICE_ADAPTION</li>
             <li>Unit 7x is SYSTEM_INFO</li>
         </ul>
+        <h3>How to get your Identifier, Secret and URL?</h3>
+        <h3>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url">https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url</h3>
         <h3>How to get your Access Code?</h3>
-        <ul style="list-style-type:square">
-            <li>..</li>
-        </ul>
+        <h3>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#access-code">https://github.com/flopp999/NIBEUplink-Domoticz#access-code</h3>
         <h3>How to get your System ID?</h3>
-        <ul style="list-style-type:square">
-            <li>..</li>
-        </ul>
+        <h3>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#system-id">https://github.com/flopp999/NIBEUplink-Domoticz#system-id</h3>
         <h3>Configuration</h3>
     </description>
     <params>
         <param field="Username" label="NIBE Uplink Identifier" width="320px" required="true" default="Username"/>
         <param field="Mode2" label="NIBE Uplink Secret" width="350px" required="true" default="Secret"/>
+        <param field="Address" label="NIBE Callback URL" width="950px" required="true" default="URL"/>
         <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
         <param field="Mode1" label="NIBE Access Code" width="350px" required="true" default="Access Code"/>
-        <param field="Address" label="NIBE Callback URL" width="950px" required="true" default="URL"/>
         <param field="Mode4" label="NIBE System ID" width="140px" required="true" default="ID"/>
         <param field="Mode5" label="Electricity Company Charge" width="70px" default="0" required="true"/>
         <param field="Mode6" label="Debug to file (Nibe.log)" width="70px">
@@ -257,7 +255,7 @@ class BasePlugin:
                         sValue = (sValue / 100.0)
                     if each["parameterId"] == 44896:
                         sValue = (sValue / 10.0)
-                    if int(Unit) > 70:
+                    if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"])
@@ -316,7 +314,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
                 Domoticz.Device(Name="addition "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
         elif ID == 71:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
-        elif ID == 41:
+        elif ID == 41 or 81:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif ID == 72 or ID == 73:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1).Create()
