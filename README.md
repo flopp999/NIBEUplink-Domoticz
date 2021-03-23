@@ -42,7 +42,7 @@ When you clicked it , in the address bar change yyyyyy to your Identifier
 Then it will ask you to login and accept.  
 When this is done the address bar will look something like below  
 "h<span>ttps://a<span>pi.nib<span>euplink.com/?code=ndfhj3u38ufhswhnerjqa5zEyN-RmBgkTCc&state=x"  
-Copy everything between "...code=" and "&state...", it is a very long code  
+Copy everything between "...code=" and "&state...", the code above is just an example, normally the code is ~380 characters
 Above example have access code "ndfhj3u38ufhswhnerjqa5zEyN-RmBgkTCc"
 
 
