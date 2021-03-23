@@ -126,7 +126,6 @@ class BasePlugin:
         if len(self.Refresh) < 270:
             Domoticz.Log("Refresh too short")
             WriteDebug("Refresh too short")
-            self.Refresh = CheckFile("Refresh")
         else:
             WriteFile("Refresh",self.Refresh)
 
