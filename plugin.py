@@ -1,9 +1,9 @@
 # NIBEUplink Python Plugin
 #
-# Author: flopp
+# Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.69" author="flopp" version="0.69" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.70" author="flopp999" version="0.70" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -13,6 +13,7 @@
         </ul>
         <h3>Devices</h3>
         <ul style="list-style-type:square">
+            <li>Unit 0x is AUX_IN_OUT</li>
             <li>Unit 1x is STATUS</li>
             <li>Unit 2x is CPR_INFO_EP14</li>
             <li>Unit 3x is VENTILATION</li>
@@ -20,24 +21,23 @@
             <li>Unit 5x is ADDITION</li>
             <li>Unit 6x is SMART_PRICE_ADAPTION</li>
             <li>Unit 7x is SYSTEM_INFO</li>
+            <li>Unit 8x is SYSTEM_2</li>
         </ul>
+        <h3>How to get your Identifier, Secret and URL?</h3>
+        <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url">https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url</a></h4>
         <h3>How to get your Access Code?</h3>
-        <ul style="list-style-type:square">
-            <li>..</li>
-        </ul>
+        <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#access-code">https://github.com/flopp999/NIBEUplink-Domoticz#access-code</a></h4>
         <h3>How to get your System ID?</h3>
-        <ul style="list-style-type:square">
-            <li>..</li>
-        </ul>
+        <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#system-id">https://github.com/flopp999/NIBEUplink-Domoticz#system-id</a></h4>
         <h3>Configuration</h3>
     </description>
     <params>
-        <param field="Username" label="NIBE Uplink Identifier" width="320px" required="true" default="Username"/>
+        <param field="Username" label="NIBE Uplink Identifier" width="320px" required="true" default="Identifier"/>
         <param field="Mode2" label="NIBE Uplink Secret" width="350px" required="true" default="Secret"/>
-        <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
-        <param field="Mode1" label="NIBE Access Code" width="350px" required="true" default="Access Code"/>
         <param field="Address" label="NIBE Callback URL" width="950px" required="true" default="URL"/>
+        <param field="Mode1" label="NIBE Access Code" width="350px" required="true" default="Access Code"/>
         <param field="Mode4" label="NIBE System ID" width="140px" required="true" default="ID"/>
+        <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
         <param field="Mode5" label="Electricity Company Charge" width="70px" default="0" required="true"/>
         <param field="Mode6" label="Debug to file (Nibe.log)" width="70px">
             <options>
@@ -93,10 +93,11 @@ class BasePlugin:
         self.SystemID = Parameters["Mode4"]
         self.Charge = Parameters["Mode5"]
         self.AllSettings = True
+        self.Categories = []
 
         if len(self.Ident) < 32:
-            Domoticz.Log("Username too short")
-            WriteDebug("Username too short")
+            Domoticz.Log("Identifier too short")
+            WriteDebug("Identifier too short")
             self.Ident = CheckFile("Ident")
         else:
             WriteFile("Ident",self.Ident)
@@ -125,7 +126,6 @@ class BasePlugin:
         if len(self.Refresh) < 270:
             Domoticz.Log("Refresh too short")
             WriteDebug("Refresh too short")
-            self.Refresh = CheckFile("Refresh")
         else:
             WriteFile("Refresh",self.Refresh)
 
@@ -141,6 +141,7 @@ class BasePlugin:
             self.GetCode.Connect() # Get a Token
         self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onConnect(self, Connection, Status, Description):
         if CheckInternet() == True and self.AllSettings == True:
@@ -170,11 +171,20 @@ class BasePlugin:
 
                 if Connection.Name == ("Get Data"):
                     WriteDebug("Get Data")
+                    if self.Categories == []:
+                        self.GetData.Disconnect()
+                        self.GetCategories.Connect()
                     self.loop = 0
-                    for category in ["STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO"]:
+                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2"]:
+#                    for category in self.Categories:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category, 'Headers': headers})
+
+                if Connection.Name == ("Get Categories"):
+                        WriteDebug("Get Categories")
+                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
@@ -209,6 +219,15 @@ class BasePlugin:
                 self.GetCode.Disconnect()
                 self.GetToken.Connect()
 
+            if Connection.Name == ("Get Categories"):
+                self.Cat = Data['Data'].decode('UTF-8')
+                self.Cat = json.loads(self.Cat)
+                for each in self.Cat:
+                    self.Categories.append(each["categoryId"])
+                Domoticz.Log(str(self.Categories))
+                self.GetCategories.Disconnect()
+                self.GetData.Connect()
+
             if Connection.Name == ("Get Token"):
                 self.token = Data['Data'].decode('UTF-8')
                 self.token = json.loads(self.token)["access_token"]
@@ -223,7 +242,6 @@ class BasePlugin:
             if Connection.Name == ("Get Data"):
                 self.data = Data['Data'].decode('UTF-8')
                 self.data = json.loads(self.data)
-                self.loop += 1
                 if self.loop == 6:
                     SPAIDS=[]
                     for ID in self.data:
@@ -257,11 +275,12 @@ class BasePlugin:
                         sValue = (sValue / 100.0)
                     if each["parameterId"] == 44896:
                         sValue = (sValue / 10.0)
-                    if int(Unit) > 70:
+                    if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"])
-                if self.loop == 7:
+                self.loop += 1
+                if self.loop == 8:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
 
@@ -294,8 +313,6 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
     if (ID not in Devices):
         if sValue == "-32768":
             return
-        elif ID == 24:
-            Domoticz.Device(Name="compressor "+Name, Unit=ID, TypeName="Temperature", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif Unit == "°C" and ID !=24:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif Unit == "A":
@@ -314,20 +331,22 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
                 Domoticz.Device(Name="compressor "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
             if ID == 51:
                 Domoticz.Device(Name="addition "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
+        elif ID == 24:
+            Domoticz.Device(Name="compressor "+Name, Unit=ID, TypeName="Temperature", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
+        elif ID == 41 or 81:
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
+        elif ID == 61:
+            Domoticz.Device(Name="comfort mode "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
+        elif ID == 62:
+            Domoticz.Device(Name="comfort mode "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
+        elif ID == 63:
+            Domoticz.Device(Name="smart price adaption "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
         elif ID == 71:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
-        elif ID == 41:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif ID == 72 or ID == 73:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1).Create()
         elif ID == 74:
             Domoticz.Device(Name="software "+Name, Unit=ID, TypeName="Custom", Used=1).Create()
-        elif ID == 63:
-            Domoticz.Device(Name="smart price adaption "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
-        elif ID == 62:
-            Domoticz.Device(Name="comfort mode "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
-        elif ID == 61:
-            Domoticz.Device(Name="comfort mode "+Name, Unit=ID, TypeName="Custom", Used=1, Description="ParameterID="+str(PID)).Create()
         else:
             if Design == "":
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Description="ParameterID="+str(PID)).Create()
