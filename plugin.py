@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.70" author="flopp999" version="0.70" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.71" author="flopp999" version="0.71" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -50,11 +50,12 @@
 """
 
 import Domoticz
+from Domoticz import Devices, Parameters, Images
 
 Package = True
 
 try:
-    import requests,json,os,logging
+    import requests, json, os, logging
 except ImportError as e:
     Package = False
 
@@ -136,9 +137,9 @@ class BasePlugin:
         else:
             WriteFile("SystemID",self.SystemID)
 
-        self.GetCode = Domoticz.Connection(Name="Get Code", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         if len(self.Refresh) < 50 and self.AllSettings == True:
-            self.GetCode.Connect() # Get a Token
+            self.GetRefresh.Connect()
         self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
@@ -146,8 +147,8 @@ class BasePlugin:
     def onConnect(self, Connection, Status, Description):
         if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
-                if Connection.Name == ("Get Code"):
-                    WriteDebug("Get Code")
+                if Connection.Name == ("Get Refresh"):
+                    WriteDebug("Get Refresh")
                     data = "grant_type=authorization_code"
                     data += "&client_id="+self.Ident
                     data += "&client_secret="+self.Secret
@@ -172,7 +173,6 @@ class BasePlugin:
                 if Connection.Name == ("Get Data"):
                     WriteDebug("Get Data")
                     if self.Categories == []:
-                        self.GetData.Disconnect()
                         self.GetCategories.Connect()
                     self.loop = 0
                     for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2"]:
@@ -188,63 +188,40 @@ class BasePlugin:
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
+        Data = Data['Data'].decode('UTF-8')
         WriteDebug("Status = "+str(Status))
-
-        if (Status == 500):
-            Domoticz.Error(str("Status 500"))
-            if _plugin.GetCode.Connected():
-                _plugin.GetCode.Disconnect()
-            if _plugin.GetToken.Connected():
-                _plugin.GetToken.Disconnect()
-            if _plugin.GetData.Connected():
-                _plugin.GetData.Disconnect()
-
-        if (Status == 400):
-            Domoticz.Error(str("Status 400"))
-            if _plugin.GetCode.Connected():
-                _plugin.GetCode.Disconnect()
-            if _plugin.GetToken.Connected():
-                _plugin.GetToken.Disconnect()
-            if _plugin.GetData.Connected():
-                _plugin.GetData.Disconnect()
+        Data = json.loads(Data)
 
         if (Status == 200):
 
-            if Connection.Name == ("Get Code"):
-                self.reftoken = Data['Data'].decode('UTF-8')
-                self.reftoken = json.loads(self.reftoken)["refresh_token"]
+            if Connection.Name == ("Get Refresh"):
+                self.reftoken = Data["refresh_token"]
                 if len(self.Refresh) < 50:
                     Domoticz.Log("Copy token to Setup->Hardware->NibeUplink->Refresh Token:")
                     Domoticz.Log(str(self.reftoken))
-                self.GetCode.Disconnect()
+                self.GetRefresh.Disconnect()
                 self.GetToken.Connect()
 
             if Connection.Name == ("Get Categories"):
-                self.Cat = Data['Data'].decode('UTF-8')
-                self.Cat = json.loads(self.Cat)
-                for each in self.Cat:
+                for each in Data:
                     self.Categories.append(each["categoryId"])
                 Domoticz.Log(str(self.Categories))
                 self.GetCategories.Disconnect()
-                self.GetData.Connect()
 
             if Connection.Name == ("Get Token"):
-                self.token = Data['Data'].decode('UTF-8')
-                self.token = json.loads(self.token)["access_token"]
+                self.token = Data["access_token"]
                 with open(dir+'/NIBEUplink.ini') as jsonfile:
                     data = json.load(jsonfile)
-                data["Config"][0]["Access"] = self.token
+                data["Config"][0]["Access"] = Data["access_token"]
                 with open(dir+'/NIBEUplink.ini', 'w') as outfile:
                     json.dump(data, outfile, indent=4)
                 self.GetToken.Disconnect()
                 self.GetData.Connect()
 
             if Connection.Name == ("Get Data"):
-                self.data = Data['Data'].decode('UTF-8')
-                self.data = json.loads(self.data)
                 if self.loop == 6:
                     SPAIDS=[]
-                    for ID in self.data:
+                    for ID in Data:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
                         UpdateDevice(int(64), int(0), str(0), "", "price of electricity", "10069", "")
@@ -255,7 +232,7 @@ class BasePlugin:
                     if 44897 not in SPAIDS:
                         UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", "44897", "")
                 loop2 = 0
-                for each in self.data:
+                for each in Data:
                     loop2 += 1
                     Unit = str(self.loop)+str(loop2)
                     sValue = each["rawValue"]
@@ -283,6 +260,18 @@ class BasePlugin:
                 if self.loop == 8:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
+
+        else:
+            Domoticz.Error(str("Status "+str(Status)))
+            Domoticz.Error(str(Data))
+            if _plugin.GetRefresh.Connected():
+                _plugin.GetRefresh.Disconnect()
+            if _plugin.GetToken.Connected():
+                _plugin.GetToken.Disconnect()
+            if _plugin.GetData.Connected():
+                _plugin.GetData.Disconnect()
+
+
 
     def onHeartbeat(self):
         self.Count += 1
@@ -395,8 +384,8 @@ def CheckInternet():
         WriteDebug("Internet is OK")
         return True
     except:
-        if _plugin.GetCode.Connected():
-            _plugin.GetCode.Disconnect()
+        if _plugin.GetRefresh.Connected():
+            _plugin.GetRefresh.Disconnect()
         if _plugin.GetToken.Connected():
             _plugin.GetToken.Disconnect()
         if _plugin.GetData.Connected():
