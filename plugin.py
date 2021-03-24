@@ -50,7 +50,6 @@
 """
 
 import Domoticz
-#from Domoticz import Devices, Parameters, Images
 
 Package = True
 
@@ -237,7 +236,6 @@ class BasePlugin:
                     if 44897 not in SPAIDS:
                         UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", "44897", "")
                 loop2 = 0
-                Domoticz.Log(str(Data))
                 for each in Data:
                     loop2 += 1
                     Unit = str(self.loop)+str(loop2)
