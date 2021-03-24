@@ -38,7 +38,7 @@ e.g. Tibber have SEK 1.55 at the moment
 You need to create an Access code before first use  
 Click on the link below, you will get an error, that is OK  
 https://api.nibeuplink.com/oauth/authorize?client_id=yyyyyy&scope=READSYSTEM&state=x&redirect_uri=https://api.nibeuplink.com/&response_type=code  
-Once you clicked it, in the address bar change yyyyyy to your Identifier, NOT YOUR SYSTEM ID!!!
+Once you clicked it, in the address bar change yyyyyy to your Identifier, NOT YOUR SYSTEM ID!!!  
 Then it will ask you to login and accept.  
 When this is done the address bar will look something like below  
 "h<span>ttps://a<span>pi.nib<span>euplink.com/?code=ndfhj3u38ufhswhnerjqa5zEyN-RmBgkTCc&state=x"  
