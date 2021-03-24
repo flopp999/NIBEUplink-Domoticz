@@ -54,7 +54,7 @@ import Domoticz
 Package = True
 
 try:
-    import requests, json, os, logging, time
+    import requests, json, os, logging
 except ImportError as e:
     Package = False
 
@@ -138,7 +138,7 @@ class BasePlugin:
 
         self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         if len(self.Refresh) < 50 and self.AllSettings == True:
-            self.GetRefresh.Connect() # Get a Token
+            self.GetRefresh.Connect()
         self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
@@ -194,7 +194,6 @@ class BasePlugin:
         if (Status == 200):
 
             if Connection.Name == ("Get Refresh"):
-#                self.reftoken = Data['Data'].decode('UTF-8')
                 self.reftoken = Data["refresh_token"]
                 if len(self.Refresh) < 50:
                     Domoticz.Log("Copy token to Setup->Hardware->NibeUplink->Refresh Token:")
@@ -203,16 +202,12 @@ class BasePlugin:
                 self.GetToken.Connect()
 
             if Connection.Name == ("Get Categories"):
- #               self.Cat = Data['Data'].decode('UTF-8')
-#                self.Cat = json.loads(Data)
                 for each in Data:
                     self.Categories.append(each["categoryId"])
                 Domoticz.Log(str(self.Categories))
                 self.GetCategories.Disconnect()
-#                self.GetData.Connect()
 
             if Connection.Name == ("Get Token"):
-#                self.token = Data['Data'].decode('UTF-8')
                 self.token = Data["access_token"]
                 with open(dir+'/NIBEUplink.ini') as jsonfile:
                     data = json.load(jsonfile)
@@ -223,8 +218,6 @@ class BasePlugin:
                 self.GetData.Connect()
 
             if Connection.Name == ("Get Data"):
-#                self.data = Data['Data'].decode('UTF-8')
-#                self.data = json.loads(Data)
                 if self.loop == 6:
                     SPAIDS=[]
                     for ID in Data:
