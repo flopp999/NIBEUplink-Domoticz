@@ -193,7 +193,6 @@ class BasePlugin:
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
         Data = Data['Data'].decode('UTF-8')
-        WriteDebug("Status = "+str(Status))
         Data = json.loads(Data)
 
         if (Status == 200):
@@ -266,6 +265,7 @@ class BasePlugin:
                     self.GetData.Disconnect()
 
         else:
+            WriteDebug("Status = "+str(Status))
             Domoticz.Error(str("Status "+str(Status)))
             Domoticz.Error(str(Data))
             if _plugin.GetRefresh.Connected():
