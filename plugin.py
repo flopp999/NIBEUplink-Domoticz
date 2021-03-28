@@ -179,7 +179,7 @@ class BasePlugin:
                     if self.Categories == []:
                         self.GetCategories.Connect()
                     self.loop = 0
-                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2"]:
+                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE"]:
 #                    for category in self.Categories:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data send")
@@ -243,6 +243,10 @@ class BasePlugin:
                     nValue = 0
                     if each["unit"] == "°C" and sValue != -32768:
                         sValue = sValue / 10.0
+                    if each["unit"] == "kWh" and sValue != -32768:
+                        sValue = sValue / 10.0
+                    if each["unit"] == "DM" and sValue != -32768:
+                        sValue = sValue / 10.0
                     if each["unit"] == "A" and each["title"] != "fuse size":
                         sValue = sValue / 10.0
                     if each["title"] == "set max electrical add.":
@@ -263,7 +267,7 @@ class BasePlugin:
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"])
                 self.loop += 1
-                if self.loop == 9:
+                if self.loop == 11:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
 
@@ -308,7 +312,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
     if (ID not in Devices):
         if sValue == "-32768":
             return
-        elif Unit == "°C" and ID !=24:
+        elif Unit == "°C" or ID == 56 and ID !=24:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif Unit == "A":
             if ID == 15:
@@ -340,8 +344,8 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
         elif ID == 72 or ID == 73:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID)).Create()
-        elif ID == 74:
-            Domoticz.Device(Name="software "+Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID)).Create()
+        elif ID == 91 or ID == 92 or ID == 93 or ID == 94 or ID == 95 or ID == 96:
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="kWh", Used=1, Image=(_plugin.ImageID)).Create()
         else:
             if Design == "":
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
