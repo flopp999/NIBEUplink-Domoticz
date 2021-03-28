@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.71" author="flopp999" version="0.71" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.72" author="flopp999" version="0.72" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -255,6 +255,8 @@ class BasePlugin:
                     if each["title"] == "electrical addition power":
                         sValue = (sValue / 100.0)
                     if each["parameterId"] == 44896:
+                        sValue = (sValue / 10.0)
+                    if each["parameterId"] == 40121:
                         sValue = (sValue / 10.0)
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
