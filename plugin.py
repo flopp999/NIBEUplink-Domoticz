@@ -22,6 +22,8 @@
             <li>Unit 6x is SMART_PRICE_ADAPTION</li>
             <li>Unit 7x is SYSTEM_INFO</li>
             <li>Unit 8x is SYSTEM_2</li>
+            <li>Unit 9x is HEAT_METER</li>
+            <li>Unit 1xx is ACTIVE_COOLING_2_PIPE</li>
         </ul>
         <h3>How to get your Identifier, Secret and URL?</h3>
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url">https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url</a></h4>
@@ -247,6 +249,8 @@ class BasePlugin:
                         sValue = sValue / 10.0
                     if each["unit"] == "DM" and sValue != -32768:
                         sValue = sValue / 10.0
+                    if each["unit"] == "l/m" and sValue != -32768:
+                        sValue = sValue / 10.0
                     if each["unit"] == "A" and each["title"] != "fuse size":
                         sValue = sValue / 10.0
                     if each["title"] == "set max electrical add.":
@@ -310,8 +314,17 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
     if (ID not in Devices):
+        Domoticz.Log(str(ID))
+        Domoticz.Log(str(Name))
+        Domoticz.Log(str(PID))
+        Domoticz.Log(str(Unit))
+        Domoticz.Log(str(nValue))
+        Domoticz.Log(str(sValue))
+
         if sValue == "-32768":
             return
+        elif Unit == "l/m":
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Waterflow", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif Unit == "°C" or ID == 56 and ID !=24:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif Unit == "A":
@@ -332,7 +345,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
                 Domoticz.Device(Name="addition "+Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
         elif ID == 24:
             Domoticz.Device(Name="compressor "+Name, Unit=ID, TypeName="Temperature", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
-        elif ID == 41 or 81:
+        elif ID == 41 or ID == 81:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif ID == 61:
             Domoticz.Device(Name="comfort mode "+Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
@@ -341,15 +354,19 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
         elif ID == 63:
             Domoticz.Device(Name="smart price adaption "+Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
         elif ID == 71:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
+            Domoticz.Log("71")
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Text", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
         elif ID == 72 or ID == 73:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID)).Create()
-        elif ID == 91 or ID == 92 or ID == 93 or ID == 94 or ID == 95 or ID == 96:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="kWh", Used=1, Image=(_plugin.ImageID)).Create()
+            Domoticz.Log("72")
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Text", Used=1, Image=(_plugin.ImageID)).Create()
+        elif ID == 74:
+            Domoticz.Device(Name="software "+Name, Unit=ID, TypeName="Text", Used=1, Image=(_plugin.ImageID)).Create()
         else:
             if Design == "":
+                Domoticz.Log("tomt"+str(ID))
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
             else:
+                Domoticz.Log("med"+str(ID))
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
 
 def CreateFile():
