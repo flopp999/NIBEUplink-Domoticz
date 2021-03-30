@@ -314,13 +314,6 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
     if (ID not in Devices):
-        Domoticz.Log(str(ID))
-        Domoticz.Log(str(Name))
-        Domoticz.Log(str(PID))
-        Domoticz.Log(str(Unit))
-        Domoticz.Log(str(nValue))
-        Domoticz.Log(str(sValue))
-
         if sValue == "-32768":
             return
         elif Unit == "l/m":
@@ -354,19 +347,15 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
         elif ID == 63:
             Domoticz.Device(Name="smart price adaption "+Name, Unit=ID, TypeName="Custom", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
         elif ID == 71:
-            Domoticz.Log("71")
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Text", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
         elif ID == 72 or ID == 73:
-            Domoticz.Log("72")
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Text", Used=1, Image=(_plugin.ImageID)).Create()
         elif ID == 74:
             Domoticz.Device(Name="software "+Name, Unit=ID, TypeName="Text", Used=1, Image=(_plugin.ImageID)).Create()
         else:
             if Design == "":
-                Domoticz.Log("tomt"+str(ID))
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
             else:
-                Domoticz.Log("med"+str(ID))
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
 
 def CreateFile():
