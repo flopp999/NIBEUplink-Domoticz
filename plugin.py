@@ -196,7 +196,7 @@ class BasePlugin:
         Data = Data['Data'].decode('UTF-8')
         WriteDebug("Status = "+str(Status))
         Data = json.loads(Data)
-
+#
         if (Status == 200):
 
             if Connection.Name == ("Get Refresh"):
