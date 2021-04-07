@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.72" author="flopp999" version="0.72" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com/">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.73" author="flopp999" version="0.73" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -34,11 +34,10 @@
         <h3>Configuration</h3>
     </description>
     <params>
-        <param field="Username" label="NIBE Uplink Identifier" width="320px" required="true" default="Identifier"/>
+        <param field="Mode4" label="NIBE Uplink Identifier" width="320px" required="true" default="Identifier"/>
         <param field="Mode2" label="NIBE Uplink Secret" width="350px" required="true" default="Secret"/>
         <param field="Address" label="NIBE Callback URL" width="950px" required="true" default="URL"/>
         <param field="Mode1" label="NIBE Access Code" width="350px" required="true" default="Access Code"/>
-        <param field="Mode4" label="NIBE System ID" width="140px" required="true" default="ID"/>
         <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
         <param field="Mode5" label="Electricity Company Charge" width="70px" default="0" required="true"/>
         <param field="Mode6" label="Debug to file (Nibe.log)" width="70px">
@@ -87,12 +86,12 @@ class BasePlugin:
 
     def onStart(self):
         WriteDebug("onStart")
-        self.Ident = Parameters["Username"]
+        self.Ident = Parameters["Mode4"]
         self.URL = Parameters["Address"]
         self.Access = Parameters["Mode1"]
         self.Secret = Parameters["Mode2"]
         self.Refresh = Parameters["Mode3"]
-        self.SystemID = Parameters["Mode4"]
+        self.SystemID = ""
         self.Charge = Parameters["Mode5"]
         self.AllSettings = True
         self.Categories = []
@@ -131,13 +130,6 @@ class BasePlugin:
         else:
             WriteFile("Refresh",self.Refresh)
 
-        if len(self.SystemID) < 4:
-            Domoticz.Log("System ID too short")
-            WriteDebug("System ID too short")
-            self.SystemID = CheckFile("SystemID")
-        else:
-            WriteFile("SystemID",self.SystemID)
-
         if 'NIBEUplink' not in Images:
             Domoticz.Image('NIBEUplink.zip').Create()
 
@@ -149,6 +141,7 @@ class BasePlugin:
         self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onConnect(self, Connection, Status, Description):
         if CheckInternet() == True and self.AllSettings == True:
@@ -161,7 +154,7 @@ class BasePlugin:
                     data += "&code="+self.Access
                     data += "&redirect_uri="+self.URL
                     data += "&scope=READSYSTEM"
-                    headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
+                    headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
                 if Connection.Name == ("Get Token"):
@@ -172,7 +165,7 @@ class BasePlugin:
                     data += "&client_id="+self.Ident
                     data += "&client_secret="+self.Secret
                     data += "&refresh_token="+self.reftoken
-                    headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com', 'Authorization': ''}
+                    headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
                     WriteDebug("innan token send")
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
@@ -182,7 +175,7 @@ class BasePlugin:
                         self.GetCategories.Connect()
                     self.loop = 0
                     for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE"]:
-#                    for category in self.Categories:
+#                   for category in self.Categories
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category, 'Headers': headers})
@@ -192,11 +185,17 @@ class BasePlugin:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/', 'Headers': headers})
 
+                if Connection.Name == ("Get SystemID"):
+                        WriteDebug("Get SystemID")
+                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems', 'Headers': headers})
+
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
         Data = Data['Data'].decode('UTF-8')
         WriteDebug("Status = "+str(Status))
         Data = json.loads(Data)
+
 
         if (Status == 200):
 
@@ -214,6 +213,11 @@ class BasePlugin:
                 Domoticz.Log(str(self.Categories))
                 self.GetCategories.Disconnect()
 
+            if Connection.Name == ("Get SystemID"):
+                self.SystemID = str(Data["objects"][0]["systemId"])
+                self.GetSystemID.Disconnect()
+                self.GetData.Connect()
+
             if Connection.Name == ("Get Token"):
                 self.token = Data["access_token"]
                 with open(dir+'/NIBEUplink.ini') as jsonfile:
@@ -222,7 +226,7 @@ class BasePlugin:
                 with open(dir+'/NIBEUplink.ini', 'w') as outfile:
                     json.dump(data, outfile, indent=4)
                 self.GetToken.Disconnect()
-                self.GetData.Connect()
+                self.GetSystemID.Connect()
 
             if Connection.Name == ("Get Data"):
                 if self.loop == 6:
@@ -274,6 +278,8 @@ class BasePlugin:
                 if self.loop == 11:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
+                    self.GetSystemID.Connect()
+
 
         else:
             Domoticz.Error(str("Status "+str(Status)))
