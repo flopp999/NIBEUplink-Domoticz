@@ -288,10 +288,15 @@ class BasePlugin:
                 _plugin.GetToken.Disconnect()
             if _plugin.GetData.Connected():
                 _plugin.GetData.Disconnect()
+            if _plugin.GetSystemID.Connected():
+                _plugin.GetSystemID.Disconnect()
+            if _plugin.GetCategories.Connected():
+                _plugin.GetCategories.Disconnect()
 
 
 
     def onHeartbeat(self):
+        Domoticz.Log(str(self.Count))
         self.Count += 1
         if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
             self.GetToken.Connect()
