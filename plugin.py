@@ -196,7 +196,6 @@ class BasePlugin:
         WriteDebug("Status = "+str(Status))
         Data = json.loads(Data)
 
-
         if (Status == 200):
 
             if Connection.Name == ("Get Refresh"):
@@ -278,7 +277,6 @@ class BasePlugin:
                 if self.loop == 11:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
-                    self.GetSystemID.Connect()
 
 
         else:
