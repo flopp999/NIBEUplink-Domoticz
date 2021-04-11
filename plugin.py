@@ -23,7 +23,9 @@
             <li>Unit 7x is SYSTEM_INFO</li>
             <li>Unit 8x is SYSTEM_2</li>
             <li>Unit 9x is HEAT_METER</li>
-            <li>Unit 1xx is ACTIVE_COOLING_2_PIPE</li>
+            <li>Unit 10x is ACTIVE_COOLING_2_PIPE</li>
+            <li>Unit 11x is PASSIVE_COOLING_INTERNAL</li>
+            <li>Unit 12x is PASSIVE_COOLING_2_PIPE</li>
         </ul>
         <h3>How to get your Identifier, Secret and URL?</h3>
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url">https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url</a></h4>
