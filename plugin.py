@@ -103,7 +103,7 @@ class BasePlugin:
         else:
             WriteFile("Ident",self.Ident)
 
-        if len(self.URL) < 26:
+        if len(self.URL) < 10:
             Domoticz.Log("URL too short")
             WriteDebug("URL too short")
             self.URL = CheckFile("URL")
@@ -122,6 +122,7 @@ class BasePlugin:
             WriteDebug("Secret too short")
             self.Secret = CheckFile("Secret")
         else:
+            self.Secret = self.Secret.replace("+", "%2B")
             WriteFile("Secret",self.Secret)
 
         if len(self.Refresh) < 270:
@@ -214,6 +215,7 @@ class BasePlugin:
 
             if Connection.Name == ("Get SystemID"):
                 self.SystemID = str(Data["objects"][0]["systemId"])
+                Domoticz.Log("sys")
                 self.GetSystemID.Disconnect()
                 self.GetData.Connect()
 
@@ -225,7 +227,10 @@ class BasePlugin:
                 with open(dir+'/NIBEUplink.ini', 'w') as outfile:
                     json.dump(data, outfile, indent=4)
                 self.GetToken.Disconnect()
-                self.GetSystemID.Connect()
+                if self.SystemID == "":
+                    self.GetSystemID.Connect()
+                else:
+                    self.GetData.Connect()
 
             if Connection.Name == ("Get Data"):
                 if self.loop == 6:
@@ -296,7 +301,6 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
-        Domoticz.Log(str(self.Count))
         self.Count += 1
         if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
             self.GetToken.Connect()
