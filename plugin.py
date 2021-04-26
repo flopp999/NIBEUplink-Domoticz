@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.74" author="flopp999" version="0.74" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.75" author="flopp999" version="0.75" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -31,8 +31,6 @@
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url">https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url</a></h4>
         <h3>How to get your Access Code?</h3>
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#access-code">https://github.com/flopp999/NIBEUplink-Domoticz#access-code</a></h4>
-        <h3>How to get your System ID?</h3>
-        <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#system-id">https://github.com/flopp999/NIBEUplink-Domoticz#system-id</a></h4>
         <h3>Configuration</h3>
     </description>
     <params>
@@ -94,6 +92,8 @@ class BasePlugin:
         self.Secret = Parameters["Mode2"]
         self.Refresh = Parameters["Mode3"]
         self.SystemID = ""
+        self.NoOfSystems = ""
+        self.SystemUnitId = 0
         self.Charge = Parameters["Mode5"]
         self.AllSettings = True
         self.Categories = []
@@ -180,17 +180,23 @@ class BasePlugin:
                     for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE"]:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data send")
-                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category, 'Headers': headers})
+                        self.SystemUnitId = 0
+                        while self.SystemUnitId < int(self.NoOfSystems):
+                            Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
+                            self.SystemUnitId += 1
 
                 if Connection.Name == ("Get Categories"):
                         WriteDebug("Get Categories")
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
-                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/', 'Headers': headers})
+                        self.SystemUnitId = 0
+                        while self.SystemUnitId < int(self.NoOfSystems):
+                            Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
+                            self.SystemUnitId += 1
 
                 if Connection.Name == ("Get SystemID"):
                         WriteDebug("Get SystemID")
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
-                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems', 'Headers': headers})
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
@@ -214,7 +220,9 @@ class BasePlugin:
                 self.GetCategories.Disconnect()
 
             if Connection.Name == ("Get SystemID"):
+                Domoticz.Log(str(Data))
                 self.SystemID = str(Data["objects"][0]["systemId"])
+                self.NoOfSystems = str(Data["numItems"]) # will be 1 higher then SystemUnitId
                 self.GetSystemID.Disconnect()
                 self.GetData.Connect()
 
@@ -237,13 +245,13 @@ class BasePlugin:
                     for ID in Data:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
-                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", "10069", "")
+                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", "10069", "", self.SystemUnitId)
                     if 44908 not in SPAIDS:
-                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", "44908", "")
+                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", "44908", "", self.SystemUnitId)
                     if 44896 not in SPAIDS:
-                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", "44896", "")
+                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", "44896", "", self.SystemUnitId)
                     if 44897 not in SPAIDS:
-                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", "44897", "")
+                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", "44897", "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
                     loop2 += 1
@@ -276,7 +284,7 @@ class BasePlugin:
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
 
-                    UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"])
+                    UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
                 if self.loop == 13:
                     Domoticz.Log("Updated")
@@ -314,7 +322,7 @@ def onStart():
     global _plugin
     _plugin.onStart()
 
-def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
+def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
     if PID == 44896:
         ID = 61
     if PID == 44897:
@@ -330,18 +338,18 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design):
         if sValue == "-32768":
             return
         elif Unit == "l/m":
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Waterflow", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Waterflow", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         elif Unit == "°C" or ID == 56 and ID !=24:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         elif Unit == "A":
             if ID == 15:
-                Domoticz.Device(Name=Name+" 1", Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
+                Domoticz.Device(Name=Name+" 1", Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
             if ID == 16:
-                Domoticz.Device(Name=Name+" 2", Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
+                Domoticz.Device(Name=Name+" 2", Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
             if ID == 17:
-                Domoticz.Device(Name=Name+" 3", Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
+                Domoticz.Device(Name=Name+" 3", Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
             if ID == 53:
-                Domoticz.Device(Name=Name, Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)).Create()
+                Domoticz.Device(Name=Name, Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nSystem="+str(SystemUnitId)).Create()
         elif Name == "compressor starts":
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;times"}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
         elif Name == "blocked":
