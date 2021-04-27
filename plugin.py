@@ -283,9 +283,10 @@ class BasePlugin:
                         sValue = (sValue / 10.0)
                     elif int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
-                    elif each["parameterID"] == 43144 or each["parameterID"] == 43305:
+                    elif each["parameterID"] == 43144:
                         sValue = (sValue / 10.0)
-                    
+                    elif each["parameterID"] == 43305:
+                        sValue = (sValue / 10.0)
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
