@@ -260,29 +260,32 @@ class BasePlugin:
                     nValue = 0
                     if each["unit"] == "°C" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "kWh" and sValue != -32768:
+                    elif each["unit"] == "kWh" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "DM" and sValue != -32768:
+                    elif each["unit"] == "DM" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "l/m" and sValue != -32768:
+                    elif each["unit"] == "l/m" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "A" and each["title"] != "fuse size":
+                    elif each["unit"] == "A" and each["title"] != "fuse size":
                         sValue = sValue / 10.0
-                    if each["title"] == "set max electrical add.":
+                    elif each["title"] == "set max electrical add.":
                         sValue = sValue / 100.0
-                    if each["unit"] == "öre/kWh":
+                    elif each["unit"] == "öre/kWh":
                         sValue = (((sValue / 1000.0) + float(Parameters["Mode5"])) * 1.25)
-                    if each["title"] == "time factor":
+                    elif each["title"] == "time factor":
                         sValue = (sValue / 10.0)
                         each["title"] = "electrical time factor"
-                    if each["title"] == "electrical addition power":
+                    elif each["title"] == "electrical addition power":
                         sValue = (sValue / 100.0)
-                    if each["parameterId"] == 44896:
+                    elif each["parameterId"] == 44896:
                         sValue = (sValue / 10.0)
-                    if each["parameterId"] == 40121:
+                    elif each["parameterId"] == 40121:
                         sValue = (sValue / 10.0)
-                    if int(Unit) > 70 and int(Unit) < 80:
+                    elif int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
+                    elif each["parameterID"] == 43144 or each["parameterID"] == 43305:
+                        sValue = (sValue / 10.0)
+                    
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
