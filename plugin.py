@@ -26,6 +26,7 @@
             <li>Unit 10x is ACTIVE_COOLING_2_PIPE</li>
             <li>Unit 11x is PASSIVE_COOLING_INTERNAL</li>
             <li>Unit 12x is PASSIVE_COOLING_2_PIPE</li>
+            <li>Unit 13x is DEFROSTING</li>
         </ul>
         <h3>How to get your Identifier, Secret and URL?</h3>
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url">https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url</a></h4>
