@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.75" author="flopp999" version="0.75" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.76" author="flopp999" version="0.76" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -146,6 +146,7 @@ class BasePlugin:
         self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetNoOfSystem = Domoticz.Connection(Name="Get NoOfSystem", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onConnect(self, Connection, Status, Description):
         if CheckInternet() == True and self.AllSettings == True:
@@ -199,8 +200,15 @@ class BasePlugin:
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/', 'Headers': headers})
 
+                if Connection.Name == ("Get NoOfSystem"):
+                        WriteDebug("Get NoOfSystem")
+                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/units', 'Headers': headers})
+
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
+#        Domoticz.Log(str(Data))
+
         Data = Data['Data'].decode('UTF-8')
         Data = json.loads(Data)
 
@@ -221,10 +229,18 @@ class BasePlugin:
                 self.GetCategories.Disconnect()
 
             if Connection.Name == ("Get SystemID"):
-                Domoticz.Log(str(Data))
+#                Domoticz.Log(str(Data))
                 self.SystemID = str(Data["objects"][0]["systemId"])
-                self.NoOfSystems = str(Data["numItems"]) # will be 1 higher then SystemUnitId
+#                self.NoOfSystems = str(Data["numItems"]) # will be 1 higher then SystemUnitId
                 self.GetSystemID.Disconnect()
+                self.GetNoOfSystem.Connect()
+
+            if Connection.Name == ("Get NoOfSystem"):
+                Domoticz.Log(str(Data))
+                Domoticz.Log(str(len(Data)))
+#                self.SystemID = str(Data["objects"][0]["systemId"])
+                self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
+                self.GetNoOfSystem.Disconnect()
                 self.GetData.Connect()
 
             if Connection.Name == ("Get Token"):
@@ -285,6 +301,8 @@ class BasePlugin:
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
                     if each["parameterId"] == 43144:
+                        sValue = (sValue / 10.0)
+                    if each["parameterId"] == 43136:
                         sValue = (sValue / 10.0)
                     if each["parameterId"] == 43305:
                         sValue = (sValue / 10.0)
