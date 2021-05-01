@@ -38,10 +38,10 @@
         <h3>Configuration</h3>
     </description>
     <params>
-        <param field="Mode5" label="Agree to send data to developer of this plugin" width="70px" default="0" required="true">
+        <param field="Mode5" label="Agree to send data to developer of this plugin" width="70px" required="true">
             <options>
-                <option label="Yes" value="Yes" />
-                <option label="No" value="No" default="true" />
+                <option label="Yes" value=True />
+                <option label="No" value=False />
             </options>
         </param>
         <param field="Mode4" label="NIBE Uplink Identifier" width="320px" required="true" default="Identifier"/>
@@ -52,7 +52,7 @@
         <param field="Mode6" label="Debug to file (Nibe.log)" width="70px">
             <options>
                 <option label="Yes" value="Yes" />
-                <option label="No" value="No" default="true" />
+                <option label="No" value="No" />
             </options>
         </param>
     </params>
@@ -104,7 +104,7 @@ class BasePlugin:
         self.NoOfSystems = ""
         self.SystemUnitId = 0
         self.FirstRun = True
-        self.Charge = Parameters["Mode5"]
+        self.Agree = Parameters["Mode5"]
         self.AllSettings = True
         self.Categories = []
 
@@ -143,19 +143,29 @@ class BasePlugin:
         else:
             WriteFile("Refresh",self.Refresh)
 
+        if self.Agree == "null":
+            Domoticz.Log("You need to agree")
+            WriteDebug("Not agree")
+            self.Agree == "False"
+#        else:
+#            WriteFile("Agree",self.Agree)
+
         if 'NIBEUplink' not in Images:
             Domoticz.Image('NIBEUplink.zip').Create()
 
         self.ImageID = Images["NIBEUplink"].ID
+        Domoticz.Log(str(self.Agree))
 
-        self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-        if len(self.Refresh) < 50 and self.AllSettings == True:
-            self.GetRefresh.Connect()
-        self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-        self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-        self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-        self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-        self.GetNoOfSystem = Domoticz.Connection(Name="Get NoOfSystem", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        if self.Agree == "True":
+            self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+            Domoticz.Log("ff")
+            if len(self.Refresh) < 50 and self.AllSettings == True:
+                self.GetRefresh.Connect()
+            self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+            self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+            self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+            self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+            self.GetNoOfSystem = Domoticz.Connection(Name="Get NoOfSystem", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onConnect(self, Connection, Status, Description):
         if CheckInternet() == True and self.AllSettings == True:
@@ -215,13 +225,14 @@ class BasePlugin:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/units', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
+
         Status = int(Data["Status"])
 #        Domoticz.Log(str(Data))
 
         Data = Data['Data'].decode('UTF-8')
         Data = json.loads(Data)
 
-        if (Status == 200):
+        if (Status == 200) and self.Agree == "True":
 
             if Connection.Name == ("Get Refresh"):
                 self.reftoken = Data["refresh_token"]
@@ -326,6 +337,8 @@ class BasePlugin:
                     self.FirstRun = False
 
 
+        elif self.Agree == "False":
+            Domoticz.Log("You must agree")
         else:
             WriteDebug("Status = "+str(Status))
             Domoticz.Error(str("Status "+str(Status)))
@@ -342,13 +355,16 @@ class BasePlugin:
                 _plugin.GetCategories.Disconnect()
 
 
-
     def onHeartbeat(self):
-        self.Count += 1
-        if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
-            self.GetToken.Connect()
-            WriteDebug("onHeartbeat")
-            self.Count = 0
+        Domoticz.Log(str(self.Agree))
+        if self.Agree == "True":
+            self.Count += 1
+            if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
+                self.GetToken.Connect()
+                WriteDebug("onHeartbeat")
+                self.Count = 0
+        else:
+            Domoticz.Log("Please agree")
 
 global _plugin
 _plugin = BasePlugin()
