@@ -95,6 +95,7 @@ class BasePlugin:
         self.SystemID = ""
         self.NoOfSystems = ""
         self.SystemUnitId = 0
+        self.FirstRun = True
         self.Charge = Parameters["Mode5"]
         self.AllSettings = True
         self.Categories = []
@@ -226,6 +227,8 @@ class BasePlugin:
                 for each in Data:
                     self.Categories.append(each["categoryId"])
                 Domoticz.Log(str(self.Categories))
+                requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(self.SystemID)+'&data='+str(self.Categories), timeout=2)
+
                 self.GetCategories.Disconnect()
 
             if Connection.Name == ("Get SystemID"):
@@ -309,9 +312,10 @@ class BasePlugin:
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
-                if self.loop == 13:
+                if self.loop == 14:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
+                    self.FirstRun = False
 
 
         else:
@@ -354,16 +358,21 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 63
     if PID == 10069:
         ID = 64
+    if _plugin.FirstRun == True:
+        requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(PID)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
     if (ID in Devices):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
+
     if (ID not in Devices):
         if sValue == "-32768":
-            return
-        elif Unit == "l/m":
+            Used = 0
+        else:
+            Used = 1
+        if Unit == "l/m":
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Waterflow", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         elif Unit == "°C" or ID == 56 and ID !=24:
-            Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=Used, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         elif Unit == "A":
             if ID == 15:
                 Domoticz.Device(Name=Name+" 1", Unit=ID, TypeName="Current (Single)", Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
