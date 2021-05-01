@@ -35,12 +35,17 @@
         <h3>Configuration</h3>
     </description>
     <params>
+        <param field="Mode5" label="Agree to send data to developer of this plugin" width="70px" default="0" required="true">
+            <options>
+                <option label="Yes" value="Yes" />
+                <option label="No" value="No" default="true" />
+            </options>
+        </param>
         <param field="Mode4" label="NIBE Uplink Identifier" width="320px" required="true" default="Identifier"/>
         <param field="Mode2" label="NIBE Uplink Secret" width="350px" required="true" default="Secret"/>
         <param field="Address" label="NIBE Callback URL" width="950px" required="true" default="URL"/>
         <param field="Mode1" label="NIBE Access Code" width="350px" required="true" default="Access Code"/>
         <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
-        <param field="Mode5" label="Electricity Company Charge" width="70px" default="0" required="true"/>
         <param field="Mode6" label="Debug to file (Nibe.log)" width="70px">
             <options>
                 <option label="Yes" value="Yes" />
@@ -417,7 +422,6 @@ def CreateFile():
         data["Config"] = []
         data["Config"].append({
              "Access": "",
-             "Charge": "",
              "Ident": "",
              "Refresh": "",
              "Secret": "",
