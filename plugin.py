@@ -309,8 +309,8 @@ class BasePlugin:
                         sValue = sValue / 10.0
                     if each["title"] == "set max electrical add.":
                         sValue = sValue / 100.0
-                    if each["unit"] == "öre/kWh":
-                        sValue = (((sValue / 1000.0) + float(Parameters["Mode5"])) * 1.25)
+#                    if each["unit"] == "öre/kWh":
+#                        sValue = (((sValue / 1000.0) + float(Parameters["Mode5"])) * 1.25)
                     if each["title"] == "time factor":
                         sValue = (sValue / 10.0)
                         each["title"] = "electrical time factor"
