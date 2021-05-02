@@ -308,8 +308,8 @@ class BasePlugin:
                         sValue = sValue / 10.0
                     if each["title"] == "set max electrical add.":
                         sValue = sValue / 100.0
-#                    if each["unit"] == "öre/kWh":
-#                        sValue = (((sValue / 1000.0) + float(Parameters["Mode5"])) * 1.25)
+                    if each["unit"] == "öre/kWh":
+                        sValue = (sValue / 1000.0)
                     if each["title"] == "time factor":
                         sValue = (sValue / 10.0)
                         each["title"] = "electrical time factor"
@@ -601,8 +601,8 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 89
     if _plugin.FirstRun == True:
         requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(PID)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
-    if SystemUnitId == 1:
-        ID = ID + 100
+#    if SystemUnitId == 1:
+#        ID = ID + 100
     if (ID in Devices):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
