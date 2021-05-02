@@ -198,13 +198,13 @@ class BasePlugin:
                     if self.Categories == []:
                         self.GetCategories.Connect()
                     self.loop = 0
-                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
-                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
-                        WriteDebug("innan data send")
-                        self.SystemUnitId = 0
-                        while self.SystemUnitId < int(self.NoOfSystems):
+                    self.SystemUnitId = 0
+                    while self.SystemUnitId < int(self.NoOfSystems):
+                        for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
+                            headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                            WriteDebug("innan data send")
                             Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
-                            self.SystemUnitId += 1
+                        self.SystemUnitId += 1
 
                 if Connection.Name == ("Get Categories"):
                         WriteDebug("Get Categories")
@@ -247,6 +247,7 @@ class BasePlugin:
                     self.Categories.append(each["categoryId"])
                 Domoticz.Log(str(self.Categories))
                 requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(self.SystemID)+'&data='+str(self.Categories), timeout=2)
+                self.Categories = []
 
                 self.GetCategories.Disconnect()
 
@@ -600,6 +601,8 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 
     if _plugin.FirstRun == True:
         requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(PID)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
+    if SystemUnitId == 1:
+        ID = ID + 100
     if (ID in Devices):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
