@@ -253,14 +253,12 @@ class BasePlugin:
             if Connection.Name == ("Get SystemID"):
 #                Domoticz.Log(str(Data))
                 self.SystemID = str(Data["objects"][0]["systemId"])
-#                self.NoOfSystems = str(Data["numItems"]) # will be 1 higher then SystemUnitId
                 self.GetSystemID.Disconnect()
                 self.GetNoOfSystem.Connect()
 
             if Connection.Name == ("Get NoOfSystem"):
                 Domoticz.Log(str(Data))
                 Domoticz.Log(str(len(Data)))
-#                self.SystemID = str(Data["objects"][0]["systemId"])
                 self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
                 self.GetNoOfSystem.Disconnect()
                 self.GetData.Connect()
@@ -377,7 +375,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
     if PID == 10001:
         ID = 31
     if PID == 10012:
-        ID = 
+        ID = 21
     if PID == 10033:
         ID = 51
     if PID == 10069:
@@ -411,7 +409,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
     if PID == 40024:
         ID = 52
     if PID == 40025:
-        ID = 
+        ID = 32
     if PID == 40026:
         ID = 33
     if PID == 40033:
@@ -419,7 +417,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
     if PID == 40067:
         ID = 11
     if PID == 40071:
-        ID = 
+        ID = 43
     if PID == 40072:
         ID = 
     if PID == 40075:
@@ -457,7 +455,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
     if PID == 43066:
         ID = 
     if PID == 43081:
-        ID = 
+        ID = 54
     if PID == 43084:
         ID = 55
     if PID == 43103:
@@ -574,7 +572,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 
     if PID == 47394:
         ID = 
-    if PID == 47402:
+    if PID == 47407:
         ID = 5
     if PID == 47408:
         ID = 4
