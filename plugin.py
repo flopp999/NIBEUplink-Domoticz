@@ -338,6 +338,8 @@ class BasePlugin:
                 if self.loop == 14:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
+                    if self.NoOfSystems == 1:
+                        _plugin.FirstRun == False
 
             if Connection.Name == ("Get Data 1"):
                 if self.loop == 6:
@@ -395,6 +397,9 @@ class BasePlugin:
                 if self.loop == 14:
                     Domoticz.Log("Updated")
                     self.GetData1.Disconnect()
+                    if self.NoOfSystems == 2:
+                        _plugin.FirstRun == False
+
 
 
         elif self.Agree == "False":
