@@ -338,7 +338,6 @@ class BasePlugin:
                 if self.loop == 14:
                     Domoticz.Log("Updated")
                     self.GetData.Disconnect()
-                    self.FirstRun = False
 
             if Connection.Name == ("Get Data 1"):
                 if self.loop == 6:
@@ -417,7 +416,6 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
-#        Domoticz.Log(str(self.Agree))
         if self.Agree == "True":
             self.Count += 1
             if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
@@ -664,7 +662,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 114
     if PID == 48914:
         ID = 89
-    if _plugin.FirstRun == True:
+    if _plugin.FirstRun == True and ID != 73:
         requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(PID)+';'+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
     if SystemUnitId == 1:
         ID = ID + 100
