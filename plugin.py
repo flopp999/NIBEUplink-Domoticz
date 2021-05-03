@@ -14,22 +14,22 @@
         <ul style="list-style-type:square">
             <li>..</li>
         </ul>
-        <h3>Devices</h3>
+        <h3>Categories that will be fetched, if they exist</h3>
         <ul style="list-style-type:square">
-            <li>Unit 0x is AUX_IN_OUT</li>
-            <li>Unit 1x is STATUS</li>
-            <li>Unit 2x is CPR_INFO_EP14</li>
-            <li>Unit 3x is VENTILATION</li>
-            <li>Unit 4x is SYSTEM_1</li>
-            <li>Unit 5x is ADDITION</li>
-            <li>Unit 6x is SMART_PRICE_ADAPTION</li>
-            <li>Unit 7x is SYSTEM_INFO</li>
-            <li>Unit 8x is SYSTEM_2</li>
-            <li>Unit 9x is HEAT_METER</li>
-            <li>Unit 10x is ACTIVE_COOLING_2_PIPE</li>
-            <li>Unit 11x is PASSIVE_COOLING_INTERNAL</li>
-            <li>Unit 12x is PASSIVE_COOLING_2_PIPE</li>
-            <li>Unit 13x is DEFROSTING</li>
+            <li>ACTIVE_COOLING_2_PIPE</li>
+            <li>ADDITION</li>
+            <li>AUX_IN_OUT</li>
+            <li>CPR_INFO_EP14</li>
+            <li>DEFROSTING</li>
+            <li>HEAT_METER</li>
+            <li>PASSIVE_COOLING_2_PIPE</li>
+            <li>PASSIVE_COOLING_INTERNAL</li>
+            <li>SMART_PRICE_ADAPTION</li>
+            <li>STATUS</li>
+            <li>SYSTEM_1</li>
+            <li>SYSTEM_2</li>
+            <li>SYSTEM_INFO</li>
+            <li>VENTILATION</li>
         </ul>
         <h3>How to get your Identifier, Secret and URL?</h3>
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url">https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url</a></h4>
