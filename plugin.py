@@ -689,7 +689,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Pressure", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         if Unit == "l/m":
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Waterflow", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
-        elif Unit == "°C" and ID !=24:
+        elif Unit == "°C" or ID == 30 and ID !=24:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=Used, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         elif Unit == "A":
             if ID == 15:
