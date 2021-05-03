@@ -340,8 +340,9 @@ class BasePlugin:
                 if self.loop == 14:
                     Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
+                    Domoticz.Log(str(type(self.NoOfSystems)))
                     if self.NoOfSystems == 1:
-                        _plugin.FirstRun == False
+                        _plugin.FirstRun = False
 
             if Connection.Name == ("Get Data 1"):
                 if self.loop == 6:
@@ -402,7 +403,7 @@ class BasePlugin:
                     Domoticz.Log("System 2 Updated")
                     self.GetData1.Disconnect()
                     if self.NoOfSystems == 2:
-                        _plugin.FirstRun == False
+                        _plugin.FirstRun = False
 
 
 
@@ -688,7 +689,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Pressure", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         if Unit == "l/m":
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Waterflow", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
-        elif Unit == "°C" or ID == 56 and ID !=24:
+        elif Unit == "°C" and ID !=24:
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Temperature", Used=Used, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         elif Unit == "A":
             if ID == 15:
