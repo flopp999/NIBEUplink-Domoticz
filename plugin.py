@@ -154,15 +154,15 @@ class BasePlugin:
             Domoticz.Image('NIBEUplink.zip').Create()
 
         self.ImageID = Images["NIBEUplink"].ID
-        Domoticz.Log(str(self.Agree))
+#        Domoticz.Log(str(self.Agree))
 
         if self.Agree == "True":
             self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            Domoticz.Log("ff")
             if len(self.Refresh) < 50 and self.AllSettings == True:
                 self.GetRefresh.Connect()
             self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            self.GetData = Domoticz.Connection(Name="Get Data", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+            self.GetData = Domoticz.Connection(Name="Get Data 0", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+            self.GetData1 = Domoticz.Connection(Name="Get Data 1", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
             self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
             self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
             self.GetNoOfSystem = Domoticz.Connection(Name="Get NoOfSystem", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
@@ -193,18 +193,27 @@ class BasePlugin:
                     WriteDebug("innan token send")
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
-                if Connection.Name == ("Get Data"):
-                    WriteDebug("Get Data")
-                    if self.Categories == []:
-                        self.GetCategories.Connect()
+                if Connection.Name == ("Get Data 0"):
+                    WriteDebug("Get Data 0")
                     self.loop = 0
                     self.SystemUnitId = 0
-#                    while self.SystemUnitId < int(self.NoOfSystems):
+                    Domoticz.Log(str(self.SystemUnitId))
                     for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
+                        Domoticz.Log(str(self.SystemUnitId))
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
-                        WriteDebug("innan data send")
-                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
-#                        self.SystemUnitId += 1
+                        WriteDebug("innan data 0 send")
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=0', 'Headers': headers})
+
+                if Connection.Name == ("Get Data 1"):
+                    WriteDebug("Get Data 1")
+                    self.loop = 0
+                    self.SystemUnitId = 1
+                    Domoticz.Log(str(self.SystemUnitId))
+                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
+                        Domoticz.Log(str(self.SystemUnitId))
+                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                        WriteDebug("innan data 1 send")
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=1', 'Headers': headers})
 
                 if Connection.Name == ("Get Categories"):
                         WriteDebug("Get Categories")
@@ -225,10 +234,7 @@ class BasePlugin:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/units', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
-
         Status = int(Data["Status"])
-#        Domoticz.Log(str(Data))
-
         Data = Data['Data'].decode('UTF-8')
         Data = json.loads(Data)
 
@@ -248,11 +254,10 @@ class BasePlugin:
                 Domoticz.Log(str(self.Categories))
                 requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(self.SystemID)+'&data='+str(self.Categories), timeout=2)
                 self.Categories = []
-
                 self.GetCategories.Disconnect()
+                self.GetData.Connect()
 
             if Connection.Name == ("Get SystemID"):
-#                Domoticz.Log(str(Data))
                 self.SystemID = str(Data["objects"][0]["systemId"])
                 self.GetSystemID.Disconnect()
                 self.GetNoOfSystem.Connect()
@@ -262,7 +267,7 @@ class BasePlugin:
                 Domoticz.Log(str(len(Data)))
                 self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
                 self.GetNoOfSystem.Disconnect()
-                self.GetData.Connect()
+                self.GetCategories.Connect()
 
             if Connection.Name == ("Get Token"):
                 self.token = Data["access_token"]
@@ -277,7 +282,7 @@ class BasePlugin:
                 else:
                     self.GetData.Connect()
 
-            if Connection.Name == ("Get Data"):
+            if Connection.Name == ("Get Data 0"):
                 if self.loop == 6:
                     SPAIDS=[]
                     for ID in Data:
@@ -335,6 +340,63 @@ class BasePlugin:
                     self.GetData.Disconnect()
                     self.FirstRun = False
 
+            if Connection.Name == ("Get Data 1"):
+                if self.loop == 6:
+                    SPAIDS=[]
+                    for ID in Data:
+                        SPAIDS.append(ID["parameterId"])
+                    if 10069 not in SPAIDS:
+                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", "10069", "", self.SystemUnitId)
+                    if 44908 not in SPAIDS:
+                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", "44908", "", self.SystemUnitId)
+                    if 44896 not in SPAIDS:
+                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", "44896", "", self.SystemUnitId)
+                    if 44897 not in SPAIDS:
+                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", "44897", "", self.SystemUnitId)
+                loop2 = 0
+                for each in Data:
+                    loop2 += 1
+                    Unit = str(self.loop)+str(loop2)
+                    sValue = each["rawValue"]
+                    nValue = 0
+                    if each["unit"] == "°C" and sValue != -32768:
+                        sValue = sValue / 10.0
+                    if each["unit"] == "kWh" and sValue != -32768:
+                        sValue = sValue / 10.0
+                    if each["unit"] == "DM" and sValue != -32768:
+                        sValue = sValue / 10.0
+                    if each["unit"] == "l/m" and sValue != -32768:
+                        sValue = sValue / 10.0
+                    if each["unit"] == "A" and each["title"] != "fuse size":
+                        sValue = sValue / 10.0
+                    if each["title"] == "set max electrical add.":
+                        sValue = sValue / 100.0
+                    if each["unit"] == "öre/kWh":
+                        sValue = (sValue / 1000.0)
+                    if each["title"] == "time factor":
+                        sValue = (sValue / 10.0)
+                        each["title"] = "electrical time factor"
+                    if each["title"] == "electrical addition power":
+                        sValue = (sValue / 100.0)
+                    if each["parameterId"] == 44896:
+                        sValue = (sValue / 10.0)
+                    if each["parameterId"] == 40121:
+                        sValue = (sValue / 10.0)
+                    if int(Unit) > 70 and int(Unit) < 80:
+                        sValue = each["displayValue"]
+                    if each["parameterId"] == 43144:
+                        sValue = (sValue / 10.0)
+                    if each["parameterId"] == 43136:
+                        sValue = (sValue / 10.0)
+                    if each["parameterId"] == 43305:
+                        sValue = (sValue / 10.0)
+
+                    UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
+                self.loop += 1
+                if self.loop == 14:
+                    Domoticz.Log("Updated")
+                    self.GetData1.Disconnect()
+
 
         elif self.Agree == "False":
             Domoticz.Log("You must agree")
@@ -355,13 +417,16 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
-        Domoticz.Log(str(self.Agree))
+#        Domoticz.Log(str(self.Agree))
         if self.Agree == "True":
             self.Count += 1
             if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
                 self.GetToken.Connect()
                 WriteDebug("onHeartbeat")
                 self.Count = 0
+            if self.Count == 3 and self.NoOfSystems == 2 and not self.GetToken.Connected() and not self.GetToken.Connecting():
+                self.GetData1.Connect()
+                WriteDebug("Data1")
         else:
             Domoticz.Log("Please agree")
 
@@ -601,8 +666,8 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 89
     if _plugin.FirstRun == True:
         requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(PID)+';'+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
-#    if SystemUnitId == 1:
-#        ID = ID + 100
+    if SystemUnitId == 1:
+        ID = ID + 100
     if (ID in Devices):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
