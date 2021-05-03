@@ -336,7 +336,7 @@ class BasePlugin:
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
                 if self.loop == 14:
-                    Domoticz.Log("Updated")
+                    Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
                     if self.NoOfSystems == 1:
                         _plugin.FirstRun == False
@@ -395,7 +395,7 @@ class BasePlugin:
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
                 if self.loop == 14:
-                    Domoticz.Log("Updated")
+                    Domoticz.Log("System 2 Updated")
                     self.GetData1.Disconnect()
                     if self.NoOfSystems == 2:
                         _plugin.FirstRun == False
@@ -667,10 +667,10 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 114
     if PID == 48914:
         ID = 89
-    if _plugin.FirstRun == True and ID != 73:
-        requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(PID)+';'+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
     if SystemUnitId == 1:
         ID = ID + 100
+    if _plugin.FirstRun == True and ID != 73 and ID != 173:
+        requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(PID)+';'+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
     if (ID in Devices):
         if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
             Devices[ID].Update(nValue, str(sValue))
