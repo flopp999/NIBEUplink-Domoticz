@@ -373,7 +373,7 @@ def onStart():
     _plugin.onStart()
 
 def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
-"""    if PID == 10001:
+#    if PID == 10001:
 #        ID = 31
 #    if PID == 10012:
 #        ID = 21
