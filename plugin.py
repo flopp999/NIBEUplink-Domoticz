@@ -373,232 +373,232 @@ def onStart():
     _plugin.onStart()
 
 def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
-    if PID == 10001:
-        ID = 31
-    if PID == 10012:
-        ID = 21
-    if PID == 10014:
-        ID = 20
-    if PID == 10033:
-        ID = 51
+"""    if PID == 10001:
+#        ID = 31
+#    if PID == 10012:
+#        ID = 21
+#    if PID == 10014:
+#        ID = 20
+#    if PID == 10033:
+#        ID = 51
     if PID == 10069:
         ID = 64
-    if PID == 40004:
-        ID = 14
-    if PID == 40008:
-        ID = 44
-    if PID == 40012:
-        ID = 45
-    if PID == 40013:
-        ID = 13
-    if PID == 40014:
-        ID = 12
-    if PID == 40015:
-        ID = 7
-    if PID == 40016:
-        ID = 8
-    if PID == 40017:
-        ID = 9
-    if PID == 40018:
-        ID = 10
-    if PID == 40019:
-        ID = 18
-    if PID == 40020:
-        ID = 24
-    if PID == 40022:
-        ID = 19
-    if PID == 40023:
-        ID = 23
-    if PID == 40024:
-        ID = 52
-    if PID == 40025:
-        ID = 32
-    if PID == 40026:
-        ID = 33
-    if PID == 40033:
-        ID = 46
-    if PID == 40067:
-        ID = 11
-    if PID == 40071:
-        ID = 43
-    if PID == 40072:
-        ID = 27
-    if PID == 40075:
-        ID = 28
-    if PID == 40079:
-        ID = 17
-    if PID == 40081:
-        ID = 16
-    if PID == 40083:
-        ID = 15
-    if PID == 40101:
-        ID = 29
-    if PID == 40121:
-        ID = 30
-    if PID == 40183:
-        ID = 40
-    if PID == 40311:
-        ID = 50
-    if PID == 40312:
-        ID = 60
-    if PID == 40737:
-        ID = 70
-    if PID == 40782:
-        ID = 80
-    if PID == 40919:
-        ID = 90
-    if PID == 40942:
-        ID = 34
-    if PID == 41026:
-        ID = 35
-    if PID == 43005:
-        ID = 36
-    if PID == 43009:
-        ID = 42
-    if PID == 43066:
-        ID = 37
-    if PID == 43081:
-        ID = 54
-    if PID == 43084:
-        ID = 55
-    if PID == 43103:
-        ID = 38
-    if PID == 43122:
-        ID = 39
-    if PID == 43123:
-        ID = 47
-    if PID == 43124:
-        ID = 48
-    if PID == 43125:
-        ID = 49
-    if PID == 43136:
-        ID = 116
-    if PID == 43161:
-        ID = 41
-    if PID == 43181:
-        ID = 57
-    if PID == 43416:
-        ID = 22
-    if PID == 43420:
-        ID = 25
-    if PID == 43424:
-        ID = 26
-    if PID == 43437:
-        ID = 58
-    if PID == 43439:
-        ID = 59
-    if PID == 44055:
-        ID = 65
-    if PID == 44058:
-        ID = 66
-    if PID == 44059:
-        ID = 67
-    if PID == 44060:
-        ID = 68
-    if PID == 44061:
-        ID = 69
-    if PID == 44069:
-        ID = 75
-    if PID == 44071:
-        ID = 76
-    if PID == 44073:
-        ID = 77
-    if PID == 44270:
-        ID = 78
-    if PID == 44298:
-        ID = 79
-    if PID == 44300:
-        ID = 81
-    if PID == 44302:
-        ID = 82
-    if PID == 44304:
-        ID = 83
-    if PID == 44306:
-        ID = 84
-    if PID == 44308:
-        ID = 85
-    if PID == 44362:
-        ID = 86
-    if PID == 44363:
-        ID = 87
-    if PID == 44396:
-        ID = 88
-    if PID == 44457:
-        ID = 91
-    if PID == 44699:
-        ID = 92
-    if PID == 44700:
-        ID = 93
-    if PID == 44701:
-        ID = 94
-    if PID == 44702:
-        ID = 95
-    if PID == 44703:
-        ID = 96
+#    if PID == 40004:
+#        ID = 14
+#    if PID == 40008:
+#        ID = 44
+#    if PID == 40012:
+#        ID = 45
+#    if PID == 40013:
+#        ID = 13
+#    if PID == 40014:
+#        ID = 12
+#    if PID == 40015:
+#        ID = 7
+#    if PID == 40016:
+#        ID = 8
+#    if PID == 40017:
+#        ID = 9
+#    if PID == 40018:
+#        ID = 10
+#    if PID == 40019:
+#        ID = 18
+#    if PID == 40020:
+#        ID = 24
+#    if PID == 40022:
+#        ID = 19
+#    if PID == 40023:
+#        ID = 23
+#    if PID == 40024:
+#        ID = 52
+#    if PID == 40025:
+#        ID = 32
+#    if PID == 40026:
+#        ID = 33
+#    if PID == 40033:
+#        ID = 46
+#    if PID == 40067:
+#        ID = 11
+#    if PID == 40071:
+#        ID = 43
+#    if PID == 40072:
+#        ID = 27
+#    if PID == 40075:
+#        ID = 28
+#    if PID == 40079:
+#        ID = 17
+#    if PID == 40081:
+#        ID = 16
+#    if PID == 40083:
+#        ID = 15
+#    if PID == 40101:
+#        ID = 29
+#    if PID == 40121:
+#        ID = 30
+#    if PID == 40183:
+#        ID = 40
+#    if PID == 40311:
+#        ID = 50
+#    if PID == 40312:
+#        ID = 60
+#    if PID == 40737:
+#        ID = 70
+#    if PID == 40782:
+#        ID = 80
+#    if PID == 40919:
+#        ID = 90
+#    if PID == 40942:
+#        ID = 34
+#    if PID == 41026:
+#        ID = 35
+#    if PID == 43005:
+#        ID = 36
+#    if PID == 43009:
+#        ID = 42
+#    if PID == 43066:
+#        ID = 37
+#    if PID == 43081:
+#        ID = 54
+#    if PID == 43084:
+#        ID = 55
+#    if PID == 43103:
+#        ID = 38
+#    if PID == 43122:
+#        ID = 39
+#    if PID == 43123:
+#        ID = 47
+#    if PID == 43124:
+#        ID = 48
+#    if PID == 43125:
+#        ID = 49
+#    if PID == 43136:
+#        ID = 116
+#    if PID == 43161:
+#        ID = 41
+#    if PID == 43181:
+#        ID = 57
+#    if PID == 43416:
+#        ID = 22
+#    if PID == 43420:
+#        ID = 25
+#    if PID == 43424:
+#        ID = 26
+#    if PID == 43437:
+#        ID = 58
+#    if PID == 43439:
+#        ID = 59
+#    if PID == 44055:
+#        ID = 65
+#    if PID == 44058:
+#        ID = 66
+#    if PID == 44059:
+#        ID = 67
+#    if PID == 44060:
+#        ID = 68
+#    if PID == 44061:
+#        ID = 69
+#    if PID == 44069:
+#        ID = 75
+#    if PID == 44071:
+#        ID = 76
+#    if PID == 44073:
+#        ID = 77
+#    if PID == 44270:
+#        ID = 78
+#    if PID == 44298:
+#        ID = 79
+#    if PID == 44300:
+#        ID = 81
+#    if PID == 44302:
+#        ID = 82
+#    if PID == 44304:
+#        ID = 83
+#    if PID == 44306:
+#        ID = 84
+#    if PID == 44308:
+#        ID = 85
+#    if PID == 44362:
+#        ID = 86
+#    if PID == 44363:
+#        ID = 87
+#    if PID == 44396:
+#        ID = 88
+#    if PID == 44457:
+#        ID = 91
+#    if PID == 44699:
+#        ID = 92
+#    if PID == 44700:
+#        ID = 93
+#    if PID == 44701:
+#        ID = 94
+#    if PID == 44702:
+#        ID = 95
+#    if PID == 44703:
+#        ID = 96
     if PID == 44896:
         ID = 61
     if PID == 44897:
         ID = 62
     if PID == 44908:
         ID = 63
-    if PID == 47011:
-        ID = 97
-    if PID == 47041:
-        ID = 98
-    if PID == 47043:
-        ID = 99
-    if PID == 47044:
-        ID = 100
-    if PID == 47045:
-        ID = 101
-    if PID == 47046:
-        ID = 102
-    if PID == 47047:
-        ID = 103
-    if PID == 47048:
-        ID = 104
-    if PID == 47049:
-        ID = 105
-    if PID == 47212:
-        ID = 56
-    if PID == 47214:
-        ID = 53
-    if PID == 47260:
-        ID = 106
-    if PID == 47276:
-        ID = 107
-    if PID == 47374:
-        ID = 108
-    if PID == 47375:
-        ID = 109
-    if PID == 47376:
-        ID = 110
-    if PID == 47377:
-        ID = 111
-    if PID == 47394:
-        ID = 112
-    if PID == 47407:
-        ID = 5
-    if PID == 47408:
-        ID = 4
-    if PID == 47409:
-        ID = 3
-    if PID == 47410:
-        ID = 2
-    if PID == 47411:
-        ID = 1
-    if PID == 47412:
-        ID = 6
-    if PID == 48043:
-        ID = 113
-    if PID == 48132:
-        ID = 115
-    if PID == 48745:
-        ID = 71
-    if PID == 48793:
-        ID = 114
-    if PID == 48914:
-        ID = 89
+#    if PID == 47011:
+#        ID = 97
+#    if PID == 47041:
+#        ID = 98
+#    if PID == 47043:
+#        ID = 99
+#    if PID == 47044:
+#        ID = 100
+#    if PID == 47045:
+#        ID = 101
+#    if PID == 47046:
+#        ID = 102
+#    if PID == 47047:
+#        ID = 103
+#    if PID == 47048:
+#        ID = 104
+#    if PID == 47049:
+#        ID = 105
+#    if PID == 47212:
+#        ID = 56
+#    if PID == 47214:
+#        ID = 53
+#    if PID == 47260:
+#        ID = 106
+#    if PID == 47276:
+#        ID = 107
+#    if PID == 47374:
+#        ID = 108
+#    if PID == 47375:
+#        ID = 109
+#    if PID == 47376:
+#        ID = 110
+#    if PID == 47377:
+#        ID = 111
+#    if PID == 47394:
+#        ID = 112
+#    if PID == 47407:
+#        ID = 5
+#    if PID == 47408:
+#        ID = 4
+#    if PID == 47409:
+#        ID = 3
+#    if PID == 47410:
+#        ID = 2
+#    if PID == 47411:
+#        ID = 1
+#    if PID == 47412:
+#        ID = 6
+#    if PID == 48043:
+#        ID = 113
+#    if PID == 48132:
+#        ID = 115
+#    if PID == 48745:
+#        ID = 71
+#    if PID == 48793:
+#        ID = 114
+#    if PID == 48914:
+#        ID = 89
     if _plugin.FirstRun == True:
         requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(PID)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
 #    if SystemUnitId == 1:
