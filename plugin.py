@@ -566,7 +566,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
     if PID == 47260:
         ID = 106
     if PID == 47276:
-        ID = 42   107
+        ID = 107
     if PID == 47374:
         ID = 108
     if PID == 47375:
