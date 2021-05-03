@@ -301,6 +301,8 @@ class BasePlugin:
                     Unit = str(self.loop)+str(loop2)
                     sValue = each["rawValue"]
                     nValue = 0
+                    if each["unit"] == "bar" and sValue != -32768:
+                        sValue = sValue / 10.0
                     if each["unit"] == "°C" and sValue != -32768:
                         sValue = sValue / 10.0
                     if each["unit"] == "kWh" and sValue != -32768:
@@ -360,6 +362,8 @@ class BasePlugin:
                     Unit = str(self.loop)+str(loop2)
                     sValue = each["rawValue"]
                     nValue = 0
+                    if each["unit"] == "bar" and sValue != -32768:
+                        sValue = sValue / 10.0
                     if each["unit"] == "°C" and sValue != -32768:
                         sValue = sValue / 10.0
                     if each["unit"] == "kWh" and sValue != -32768:
@@ -680,6 +684,8 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
             Used = 0
         else:
             Used = 1
+        if Unit == "bar":
+            Domoticz.Device(Name=Name, Unit=ID, TypeName="Pressure", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         if Unit == "l/m":
             Domoticz.Device(Name=Name, Unit=ID, TypeName="Waterflow", Used=1, Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)+"\nSystem="+str(SystemUnitId)).Create()
         elif Unit == "°C" or ID == 56 and ID !=24:
