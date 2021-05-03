@@ -199,12 +199,12 @@ class BasePlugin:
                         self.GetCategories.Connect()
                     self.loop = 0
                     self.SystemUnitId = 0
-                    while self.SystemUnitId < int(self.NoOfSystems):
-                        for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
-                            headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
-                            WriteDebug("innan data send")
-                            Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
-                        self.SystemUnitId += 1
+#                    while self.SystemUnitId < int(self.NoOfSystems):
+                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
+                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
+                        WriteDebug("innan data send")
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
+#                        self.SystemUnitId += 1
 
                 if Connection.Name == ("Get Categories"):
                         WriteDebug("Get Categories")
