@@ -400,6 +400,8 @@ class BasePlugin:
                         sValue = (sValue / 10.0)
                     if each["parameterId"] == 43305:
                         sValue = (sValue / 10.0)
+                    if each["parameterId"] == 44701:
+                        sValue = (sValue / 10.0)
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
