@@ -166,39 +166,39 @@ class BasePlugin:
             self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
             self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
             self.GetNoOfSystem = Domoticz.Connection(Name="Get NoOfSystem", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+            self.GetTarget = Domoticz.Connection(Name="Get Target", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onConnect(self, Connection, Status, Description):
         if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
+                headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
+                data = "client_id="+self.Ident
+                data += "&client_secret="+self.Secret
+
+
                 if Connection.Name == ("Get Refresh"):
                     WriteDebug("Get Refresh")
-                    data = "grant_type=authorization_code"
-                    data += "&client_id="+self.Ident
-                    data += "&client_secret="+self.Secret
+                    data += "&grant_type=authorization_code"
                     data += "&code="+self.Access
                     data += "&redirect_uri="+self.URL
                     data += "&scope=READSYSTEM"
-                    headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
                 if Connection.Name == ("Get Token"):
                     WriteDebug("Get Token")
                     if len(self.Refresh) > 50:
                         self.reftoken = self.Refresh
-                    data = "grant_type=refresh_token"
-                    data += "&client_id="+self.Ident
-                    data += "&client_secret="+self.Secret
+                    data += "&grant_type=refresh_token"
                     data += "&refresh_token="+self.reftoken
-                    headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
-                    WriteDebug("innan token send")
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
+
+                headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
 
                 if Connection.Name == ("Get Data 0"):
                     WriteDebug("Get Data 0")
                     self.loop = 0
                     self.SystemUnitId = 0
                     for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
-                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data 0 send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=0', 'Headers': headers})
 
@@ -207,13 +207,11 @@ class BasePlugin:
                     self.loop = 0
                     self.SystemUnitId = 1
                     for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
-                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data 1 send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=1', 'Headers': headers})
 
                 if Connection.Name == ("Get Categories"):
                         WriteDebug("Get Categories")
-                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         self.SystemUnitId = 0
                         while self.SystemUnitId < int(self.NoOfSystems):
                             Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
@@ -221,13 +219,15 @@ class BasePlugin:
 
                 if Connection.Name == ("Get SystemID"):
                         WriteDebug("Get SystemID")
-                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/', 'Headers': headers})
 
                 if Connection.Name == ("Get NoOfSystem"):
                         WriteDebug("Get NoOfSystem")
-                        headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/units', 'Headers': headers})
+
+                if Connection.Name == ("Get Target"):
+                        WriteDebug("Get Target")
+                        Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/parameters?parameterIds=47398', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
@@ -258,11 +258,19 @@ class BasePlugin:
                 self.GetNoOfSystem.Connect()
 
             if Connection.Name == ("Get NoOfSystem"):
-                Domoticz.Log("System found:")
-                Domoticz.Log(str(len(Data)))
+                Domoticz.Log("System found:"+str(len(Data)))
                 self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
                 self.GetNoOfSystem.Disconnect()
                 self.GetCategories.Connect()
+
+            if Connection.Name == ("Get Target"):
+                Domoticz.Log(str(Data[0]["parameterId"]))
+
+                sValue = Data[0]["rawValue"]/10
+                nValue = 0
+
+                UpdateDevice(int(117), int(nValue), str(sValue), Data[0]["unit"], Data[0]["title"], Data[0]["parameterId"], Data[0]["designation"], 1)
+                self.GetTarget.Disconnect()
 
             if Connection.Name == ("Get Token"):
                 self.token = Data["access_token"]
@@ -337,6 +345,8 @@ class BasePlugin:
                     self.GetData.Disconnect()
                     if self.NoOfSystems == 1:
                         _plugin.FirstRun = False
+                    self.GetTarget.Connect()
+
 
             if Connection.Name == ("Get Data 1"):
                 if self.loop == 6:
