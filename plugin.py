@@ -197,9 +197,7 @@ class BasePlugin:
                     WriteDebug("Get Data 0")
                     self.loop = 0
                     self.SystemUnitId = 0
-                    Domoticz.Log(str(self.SystemUnitId))
                     for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
-                        Domoticz.Log(str(self.SystemUnitId))
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data 0 send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=0', 'Headers': headers})
@@ -208,9 +206,7 @@ class BasePlugin:
                     WriteDebug("Get Data 1")
                     self.loop = 0
                     self.SystemUnitId = 1
-                    Domoticz.Log(str(self.SystemUnitId))
                     for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING"]:
-                        Domoticz.Log(str(self.SystemUnitId))
                         headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
                         WriteDebug("innan data 1 send")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=1', 'Headers': headers})
@@ -251,7 +247,6 @@ class BasePlugin:
             if Connection.Name == ("Get Categories"):
                 for each in Data:
                     self.Categories.append(each["categoryId"])
-                Domoticz.Log(str(self.Categories))
                 requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(self.SystemID)+'&data='+str(self.Categories), timeout=2)
                 self.Categories = []
                 self.GetCategories.Disconnect()
@@ -263,7 +258,7 @@ class BasePlugin:
                 self.GetNoOfSystem.Connect()
 
             if Connection.Name == ("Get NoOfSystem"):
-                Domoticz.Log(str(Data))
+                Domoticz.Log("System found:")
                 Domoticz.Log(str(len(Data)))
                 self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
                 self.GetNoOfSystem.Disconnect()
@@ -340,7 +335,6 @@ class BasePlugin:
                 if self.loop == 14:
                     Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
-                    Domoticz.Log(str(type(self.NoOfSystems)))
                     if self.NoOfSystems == 1:
                         _plugin.FirstRun = False
 
