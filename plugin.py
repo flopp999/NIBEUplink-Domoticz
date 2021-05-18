@@ -81,7 +81,7 @@ except ImportError as e:
 dir = os.path.dirname(os.path.realpath(__file__))
 logger = logging.getLogger("NIBE")
 logger.setLevel(logging.INFO)
-handler = RotatingFileHandler(dir+'/NIBEUplink.log', maxBytes=50000, backupCount=5)
+handler = RotatingFileHandler(dir+'/NIBEUplink.log', maxBytes=1000000, backupCount=5)
 logger.addHandler(handler)
 
 class BasePlugin:
@@ -172,9 +172,11 @@ class BasePlugin:
         WriteDebug("onDisconnect called for connection '"+Connection.Name+"'.")
         for x in self.Connections:
             if Connection.Name in self.Connections:
+#                if Connection.Connected() == False
                 self.Connections[Connection.Name] = Connection.Connected()
 
     def onConnect(self, Connection, Status, Description):
+        WriteDebug("onConnect")
 #        Domoticz.Log(str(type(self.Connections)))
         if Connection.Name not in self.Connections:
             self.Connections[Connection.Name] = Connection.Connected()
@@ -424,6 +426,10 @@ class BasePlugin:
             WriteDebug("Status = "+str(Status))
             Domoticz.Error(str("Status "+str(Status)))
             Domoticz.Error(str(Data))
+            WriteDebug(str(self.SystemID))
+            WriteDebug(str(self.NoOfSystems))
+            WriteDebug(str(self.reftoken))
+            WriteDebug(str(self.token))
             if _plugin.GetRefresh.Connected():
                 _plugin.GetRefresh.Disconnect()
             if _plugin.GetToken.Connected():
@@ -434,12 +440,17 @@ class BasePlugin:
                 _plugin.GetSystemID.Disconnect()
             if _plugin.GetCategories.Connected():
                 _plugin.GetCategories.Disconnect()
+            if _plugin.GetTarget.Connected():
+                _plugin.GetTarget.Disconnect()
+            if _plugin.GetNoOfSystems.Connected():
+                _plugin.GetNoOfSystems.Disconnect()
 
 
     def onHeartbeat(self):
         for Connect in self.Connections:
             WriteDebug(Connect+": "+str(self.Connections[Connect]))
-#            Domoticz.Log(str(Connection[2]))
+            if self.Connections[Connect] == True:
+                Domoticz.Error(Connect+": "+str(self.Connections[Connect]))
 
 #            if Connect == True:
 #                Domoticz.Log("sant")
