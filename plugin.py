@@ -464,11 +464,11 @@ class BasePlugin:
 #            WriteDebug("Categories"+str(_plugin.GetCategories.Connected()))
 #            WriteDebug("NoOfSystems"+str(_plugin.GetNoOfSystems.Connected()))
 #            WriteDebug("Target"+str(_plugin.GetTarget.Connected()))
-            if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
+            if self.Count == 12 and not self.GetToken.Connected() and not self.GetToken.Connecting():
                 self.GetToken.Connect()
                 WriteDebug("onHeartbeat")
                 self.Count = 0
-            if self.Count == 3 and self.NoOfSystems == 2 and not self.GetToken.Connected() and not self.GetToken.Connecting():
+            if self.Count == 9 and self.NoOfSystems == 2 and not self.GetToken.Connected() and not self.GetToken.Connecting():
                 self.GetData1.Connect()
                 WriteDebug("Data1")
         else:
