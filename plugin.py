@@ -709,7 +709,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
     if PID == 48914:
         ID = 89
     if SystemUnitId == 1:
-        ID = ID + 100
+        ID = ID + 130
     if _plugin.FirstRun == True and ID != 73 and ID != 173:
         requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(PID)+';'+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
     if (ID in Devices):
