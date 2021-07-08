@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.79" author="flopp999" version="0.79" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.80" author="flopp999" version="0.80" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -448,10 +448,10 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
-        for Connect in self.Connections:
-            WriteDebug(Connect+": "+str(self.Connections[Connect]))
-            if self.Connections[Connect] == True:
-                Domoticz.Error(Connect+": "+str(self.Connections[Connect]))
+#        for Connect in self.Connections:
+#            WriteDebug(Connect+": "+str(self.Connections[Connect]))
+#            if self.Connections[Connect] == True:
+#                Domoticz.Error(Connect+": "+str(self.Connections[Connect]))
 
 #            if Connect == True:
 #                Domoticz.Log("sant")
