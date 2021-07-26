@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.80" author="flopp999" version="0.80" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.81" author="flopp999" version="0.81" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -21,7 +21,9 @@
             <li>AUX_IN_OUT</li>
             <li>CPR_INFO_EP14</li>
             <li>DEFROSTING</li>
+            <li>EME</li>
             <li>HEAT_METER</li>
+            <li>HTS1</li>
             <li>PASSIVE_COOLING_2_PIPE</li>
             <li>PASSIVE_COOLING_INTERNAL</li>
             <li>SMART_ENERGY_SOURCE_PRICES</li>
@@ -149,8 +151,6 @@ class BasePlugin:
             Domoticz.Log("You need to agree")
             WriteDebug("Not agree")
             self.Agree == "False"
-#        else:
-#            WriteFile("Agree",self.Agree)
 
         if 'NIBEUplink' not in Images:
             Domoticz.Image('NIBEUplink.zip').Create()
@@ -173,16 +173,12 @@ class BasePlugin:
         WriteDebug("onDisconnect called for connection '"+Connection.Name+"'.")
         for x in self.Connections:
             if Connection.Name in self.Connections:
-#                if Connection.Connected() == False
                 self.Connections[Connection.Name] = Connection.Connected()
 
     def onConnect(self, Connection, Status, Description):
         WriteDebug("onConnect")
-#        Domoticz.Log(str(type(self.Connections)))
         if Connection.Name not in self.Connections:
             self.Connections[Connection.Name] = Connection.Connected()
-#        Domoticz.Log(str(self.Connections))
-#        Domoticz.Log(str(type(self.Connections)))
         if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
                 headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
@@ -211,14 +207,14 @@ class BasePlugin:
                     WriteDebug("Get Data 0")
                     self.loop = 0
                     self.SystemUnitId = 0
-                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES"]:
+                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=0', 'Headers': headers})
 
                 if Connection.Name == ("Get Data 1"):
                     WriteDebug("Get Data 1")
                     self.loop = 0
                     self.SystemUnitId = 1
-                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES"]:
+                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=1', 'Headers': headers})
 
                 if Connection.Name == ("Get Categories"):
@@ -299,13 +295,13 @@ class BasePlugin:
                     for ID in Data:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
-                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", "10069", "", self.SystemUnitId)
+                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
                     if 44908 not in SPAIDS:
-                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", "44908", "", self.SystemUnitId)
+                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
                     if 44896 not in SPAIDS:
-                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", "44896", "", self.SystemUnitId)
+                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
                     if 44897 not in SPAIDS:
-                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", "44897", "", self.SystemUnitId)
+                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
                     loop2 += 1
@@ -348,7 +344,7 @@ class BasePlugin:
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
-                if self.loop == 14:
+                if self.loop == 16:
                     Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
                     if self.NoOfSystems == 1:
@@ -362,13 +358,13 @@ class BasePlugin:
                     for ID in Data:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
-                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", "10069", "", self.SystemUnitId)
+                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
                     if 44908 not in SPAIDS:
-                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", "44908", "", self.SystemUnitId)
+                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
                     if 44896 not in SPAIDS:
-                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", "44896", "", self.SystemUnitId)
+                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
                     if 44897 not in SPAIDS:
-                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", "44897", "", self.SystemUnitId)
+                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
                     loop2 += 1
@@ -413,7 +409,7 @@ class BasePlugin:
 
                     UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
-                if self.loop == 14:
+                if self.loop == 16:
                     Domoticz.Log("System 2 Updated")
                     self.GetData1.Disconnect()
                     if self.NoOfSystems == 2:
@@ -448,23 +444,8 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
-#        for Connect in self.Connections:
-#            WriteDebug(Connect+": "+str(self.Connections[Connect]))
-#            if self.Connections[Connect] == True:
-#                Domoticz.Error(Connect+": "+str(self.Connections[Connect]))
-
-#            if Connect == True:
-#                Domoticz.Log("sant")
-
         if self.Agree == "True":
             self.Count += 1
-#            WriteDebug("Refresh"+str(_plugin.GetRefresh.Connected()))
-#            WriteDebug("Token"+str(_plugin.GetToken.Connected()))
-#            WriteDebug("Data"+str(_plugin.GetData.Connected()))
-#            WriteDebug("SystemID"+str(_plugin.GetSystemID.Connected()))
-#            WriteDebug("Categories"+str(_plugin.GetCategories.Connected()))
-#            WriteDebug("NoOfSystems"+str(_plugin.GetNoOfSystems.Connected()))
-#            WriteDebug("Target"+str(_plugin.GetTarget.Connected()))
             if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
                 self.GetToken.Connect()
                 WriteDebug("onHeartbeat")
@@ -483,238 +464,266 @@ def onStart():
     _plugin.onStart()
 
 def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
+
     if PID == 10001:
         ID = 31
-    if PID == 10012:
+    elif PID == 10012:
         ID = 21
-    if PID == 10014:
+    elif PID == 10014:
         ID = 20
-    if PID == 10033:
+    elif PID == 10033:
         ID = 51
-    if PID == 10069:
+    elif PID == 10069:
         ID = 64
-    if PID == 40004:
+    elif PID == 40004:
         ID = 14
-    if PID == 40008:
+    elif PID == 40008:
         ID = 44
-    if PID == 40012:
+    elif PID == 40012:
         ID = 45
-    if PID == 40013:
+    elif PID == 40013:
         ID = 13
-    if PID == 40014:
+    elif PID == 40014:
         ID = 12
-    if PID == 40015:
+    elif PID == 40015:
         ID = 7
-    if PID == 40016:
+    elif PID == 40016:
         ID = 8
-    if PID == 40017:
+    elif PID == 40017:
         ID = 9
-    if PID == 40018:
+    elif PID == 40018:
         ID = 10
-    if PID == 40019:
+    elif PID == 40019:
         ID = 36
-    if PID == 40020:
+    elif PID == 40020:
         ID = 24
-    if PID == 40022:
+    elif PID == 40022:
         ID = 19
-    if PID == 40023:
+    elif PID == 40023:
         ID = 23
-    if PID == 40024:
+    elif PID == 40024:
         ID = 52
-    if PID == 40025:
+    elif PID == 40025:
         ID = 32
-    if PID == 40026:
+    elif PID == 40026:
         ID = 33
-    if PID == 40033:
+    elif PID == 40033:
         ID = 46
-    if PID == 40067:
+    elif PID == 40067:
         ID = 11
-    if PID == 40071:
+    elif PID == 40071:
         ID = 43
-    if PID == 40072:
+    elif PID == 40072:
         ID = 27
-    if PID == 40075:
+    elif PID == 40075:
         ID = 28
-    if PID == 40079:
+    elif PID == 40079:
         ID = 17
-    if PID == 40081:
+    elif PID == 40081:
         ID = 16
-    if PID == 40083:
+    elif PID == 40083:
         ID = 15
-    if PID == 40101:
+    elif PID == 40101:
         ID = 29
-    if PID == 40121:
+    elif PID == 40121:
         ID = 30
-    if PID == 40183:
+    elif PID == 40152:
+        ID = 118
+    elif PID == 40183:
         ID = 40
-    if PID == 40311:
+    elif PID == 40311:
         ID = 50
-    if PID == 40312:
+    elif PID == 40312:
         ID = 60
-    if PID == 40737:
+    elif PID == 40737:
         ID = 70
-    if PID == 40782:
+    elif PID == 40771:
+        ID = 117
+    elif PID == 40782:
         ID = 80
-    if PID == 40919:
+    elif PID == 40919:
         ID = 90
-    if PID == 40942:
+    elif PID == 40942:
         ID = 34
-    if PID == 41026:
+    elif PID == 41002:
+        ID = 119
+    elif PID == 41026:
         ID = 35
-    if PID == 43005:
+    elif PID == 41162:
+        ID = 120
+    elif PID == 41163:
+        ID = 121
+    elif PID == 41164:
+        ID = 122
+    elif PID == 41167:
+        ID = 123
+    elif PID == 41427:
+        ID = 124
+    elif PID == 43005:
         ID = 18
-    if PID == 43009:
+    elif PID == 43009:
         ID = 42
-    if PID == 43066:
+    elif PID == 43066:
         ID = 37
-    if PID == 43081:
+    elif PID == 43081:
         ID = 54
-    if PID == 43084:
+    elif PID == 43091:
+        ID = 125
+    elif PID == 43084:
         ID = 55
-    if PID == 43103:
+    elif PID == 43103:
         ID = 38
-    if PID == 43122:
+    elif PID == 43122:
         ID = 39
-    if PID == 43123:
+    elif PID == 43123:
         ID = 47
-    if PID == 43124:
+    elif PID == 43124:
         ID = 48
-    if PID == 43125:
+    elif PID == 43125:
         ID = 49
-    if PID == 43136:
+    elif PID == 43136:
         ID = 116
-    if PID == 43161:
+    elif PID == 43161:
         ID = 41
-    if PID == 43181:
+    elif PID == 43181:
         ID = 57
-    if PID == 43416:
+    elif PID == 43416:
         ID = 22
-    if PID == 43420:
+    elif PID == 43420:
         ID = 25
-    if PID == 43424:
+    elif PID == 43424:
         ID = 26
-    if PID == 43437:
+    elif PID == 43437:
         ID = 58
-    if PID == 43439:
+    elif PID == 43439:
         ID = 59
-    if PID == 44055:
+    elif PID == 44014:
+        ID = 126
+    elif PID == 44055:
         ID = 65
-    if PID == 44058:
+    elif PID == 44058:
         ID = 66
-    if PID == 44059:
+    elif PID == 44059:
         ID = 67
-    if PID == 44060:
+    elif PID == 44060:
         ID = 68
-    if PID == 44061:
+    elif PID == 44061:
         ID = 69
-    if PID == 44069:
+    elif PID == 44069:
         ID = 75
-    if PID == 44071:
+    elif PID == 44071:
         ID = 76
-    if PID == 44073:
+    elif PID == 44073:
         ID = 77
-    if PID == 44270:
+    elif PID == 44270:
         ID = 78
-    if PID == 44298:
+    elif PID == 44298:
         ID = 79
-    if PID == 44300:
+    elif PID == 44300:
         ID = 81
-    if PID == 44302:
+    elif PID == 44302:
         ID = 82
-    if PID == 44304:
+    elif PID == 44304:
         ID = 83
-    if PID == 44306:
+    elif PID == 44306:
         ID = 84
-    if PID == 44308:
+    elif PID == 44308:
         ID = 85
-    if PID == 44362:
+    elif PID == 44362:
         ID = 86
-    if PID == 44363:
+    elif PID == 44363:
         ID = 87
-    if PID == 44396:
+    elif PID == 44396:
         ID = 88
-    if PID == 44457:
+    elif PID == 44457:
         ID = 91
-    if PID == 44699:
+    elif PID == 44699:
         ID = 92
-    if PID == 44700:
+    elif PID == 44700:
         ID = 93
-    if PID == 44701:
+    elif PID == 44701:
         ID = 94
-    if PID == 44702:
+    elif PID == 44702:
         ID = 95
-    if PID == 44703:
+    elif PID == 44703:
         ID = 96
-    if PID == 44896:
+    elif PID == 44896:
         ID = 61
-    if PID == 44897:
+    elif PID == 44897:
         ID = 62
-    if PID == 44908:
+    elif PID == 44908:
         ID = 63
-    if PID == 47011:
+    elif PID == 47011:
         ID = 97
-    if PID == 47041:
+    elif PID == 47041:
         ID = 98
-    if PID == 47043:
+    elif PID == 47043:
         ID = 99
-    if PID == 47044:
+    elif PID == 47044:
         ID = 100
-    if PID == 47045:
+    elif PID == 47045:
         ID = 101
-    if PID == 47046:
+    elif PID == 47046:
         ID = 102
-    if PID == 47047:
+    elif PID == 47047:
         ID = 103
-    if PID == 47048:
+    elif PID == 47048:
         ID = 104
-    if PID == 47049:
+    elif PID == 47049:
         ID = 105
-    if PID == 47212:
+    elif PID == 47212:
         ID = 56
-    if PID == 47214:
+    elif PID == 47214:
         ID = 53
-    if PID == 47260:
+    elif PID == 47260:
         ID = 106
-    if PID == 47276:
+    elif PID == 47276:
         ID = 107
-    if PID == 47374:
+    elif PID == 47374:
         ID = 108
-    if PID == 47375:
+    elif PID == 47375:
         ID = 109
-    if PID == 47376:
+    elif PID == 47376:
         ID = 110
-    if PID == 47377:
+    elif PID == 47377:
         ID = 111
-    if PID == 47394:
+    elif PID == 47394:
         ID = 112
-    if PID == 47407:
+    elif PID == 47398:
+        ID = 127
+    elif PID == 47407:
         ID = 5
-    if PID == 47408:
+    elif PID == 47408:
         ID = 4
-    if PID == 47409:
+    elif PID == 47409:
         ID = 3
-    if PID == 47410:
+    elif PID == 47410:
         ID = 2
-    if PID == 47411:
+    elif PID == 47411:
         ID = 1
-    if PID == 47412:
+    elif PID == 47412:
         ID = 6
-    if PID == 48043:
+    elif PID == 47613:
+        ID = 128
+    elif PID == 48043:
         ID = 113
-    if PID == 48132:
+    elif PID == 48132:
         ID = 115
-    if PID == 48745:
+    elif PID == 48366:
+        ID = 129
+    elif PID == 48745:
         ID = 71
-    if PID == 48793:
+    elif PID == 48793:
         ID = 114
-    if PID == 48914:
+    elif PID == 48914:
         ID = 89
+    else:
+        if _plugin.FirstRun == True and ID != 72 and ID != 73 and ID != 74:
+            requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(PID)+';'+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
     if SystemUnitId == 1:
         ID = ID + 130
-    if _plugin.FirstRun == True and ID != 73 and ID != 173:
-        requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(PID)+';'+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
     if (ID in Devices):
-        if (Devices[ID].nValue != nValue) or (Devices[ID].sValue != sValue):
+        if Devices[ID].sValue != sValue:
             Devices[ID].Update(nValue, str(sValue))
 
     if (ID not in Devices):
