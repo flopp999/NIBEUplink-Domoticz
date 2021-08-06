@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.82" author="flopp999" version="0.82" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.83" author="flopp999" version="0.83" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -115,37 +115,24 @@ class BasePlugin:
         if len(self.Ident) < 32:
             Domoticz.Log("Identifier too short")
             WriteDebug("Identifier too short")
-            self.Ident = CheckFile("Ident")
-        else:
-            WriteFile("Ident",self.Ident)
 
         if len(self.URL) < 10:
             Domoticz.Log("URL too short")
             WriteDebug("URL too short")
-            self.URL = CheckFile("URL")
-        else:
-            WriteFile("URL",self.URL)
 
         if len(self.Access) < 370:
             Domoticz.Log("Access Code too short")
             WriteDebug("Access Code too short")
-            self.Access = CheckFile("Access")
-        else:
-            WriteFile("Access",self.Access)
 
         if len(self.Secret) < 44:
             Domoticz.Log("Secret too short")
             WriteDebug("Secret too short")
-            self.Secret = CheckFile("Secret")
         else:
             self.Secret = self.Secret.replace("+", "%2B")
-            WriteFile("Secret",self.Secret)
 
         if len(self.Refresh) < 270:
             Domoticz.Log("Refresh too short")
             WriteDebug("Refresh too short")
-        else:
-            WriteFile("Refresh",self.Refresh)
 
         if self.Agree == "null":
             Domoticz.Log("You need to agree")
@@ -238,10 +225,10 @@ class BasePlugin:
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
-        Data = Data['Data'].decode('UTF-8')
-        Data = json.loads(Data)
 
         if (Status == 200) and self.Agree == "True":
+            Data = Data['Data'].decode('UTF-8')
+            Data = json.loads(Data)
 
             if Connection.Name == ("Get Refresh"):
                 self.reftoken = Data["refresh_token"]
@@ -775,38 +762,6 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
             else:
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
 
-def CreateFile():
-    if not os.path.isfile(dir+'/NIBEUplink.ini'):
-        data = {}
-        data["Config"] = []
-        data["Config"].append({
-             "Access": "",
-             "Ident": "",
-             "Refresh": "",
-             "Secret": "",
-             "SystemID": "",
-             "URL": ""
-             })
-        with open(dir+'/NIBEUplink.ini', 'w') as outfile:
-            json.dump(data, outfile, indent=4)
-
-def CheckFile(Parameter):
-    if os.path.isfile(dir+'/NIBEUplink.ini'):
-        with open(dir+'/NIBEUplink.ini') as jsonfile:
-            data = json.load(jsonfile)
-            data = data["Config"][0][Parameter]
-            if data == "":
-                _plugin.AllSettings = False
-            else:
-                return data
-
-def WriteFile(Parameter,text):
-    CreateFile()
-    with open(dir+'/NIBEUplink.ini') as jsonfile:
-        data = json.load(jsonfile)
-    data["Config"][0][Parameter] = text
-    with open(dir+'/NIBEUplink.ini', 'w') as outfile:
-        json.dump(data, outfile, indent=4)
 
 def CheckInternet():
     WriteDebug("Entered CheckInternet")
