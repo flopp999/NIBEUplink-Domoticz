@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.84" author="flopp999" version="0.84" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.85" author="flopp999" version="0.85" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -321,7 +321,7 @@ class BasePlugin:
 
                     UpdateDevice(int(Unit), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
-                if self.loop == 16:
+                if self.loop == len(categories)-1:
                     Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
                     if self.NoOfSystems == 1:
@@ -385,7 +385,7 @@ class BasePlugin:
 
                     UpdateDevice(int(Unit), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
-                if self.loop == 16:
+                if self.loop == len(categories)-1:
                     Domoticz.Log("System 2 Updated")
                     self.GetData1.Disconnect()
                     if self.NoOfSystems == 2:
