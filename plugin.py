@@ -185,7 +185,7 @@ class BasePlugin:
 
                 headers = { 'Host': 'api.nibeuplink.com', 'Authorization': 'Bearer '+self.token}
 
-                elif Connection.Name == ("Get Data 0"):
+                if Connection.Name == ("Get Data 0"):
                     WriteDebug("Get Data 0")
                     self.loop = 0
                     self.SystemUnitId = 0
@@ -254,8 +254,7 @@ class BasePlugin:
 
             elif Connection.Name == ("Get Target"):
                 sValue = Data[0]["rawValue"]/10
-                nValue = 0
-                UpdateDevice(int(117), int(nValue), str(sValue), Data[0]["unit"], Data[0]["title"], Data[0]["parameterId"], Data[0]["designation"], 0)
+                UpdateDevice(int(117), str(sValue), Data[0]["unit"], Data[0]["title"], Data[0]["parameterId"], Data[0]["designation"], 0)
                 self.GetTarget.Disconnect()
 
             elif Connection.Name == ("Get Token"):
@@ -271,20 +270,19 @@ class BasePlugin:
                     SPAIDS=[]
                     for ID in Data:
                         SPAIDS.append(ID["parameterId"])
-                    elif 10069 not in SPAIDS:
-                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
+                    if 10069 not in SPAIDS:
+                        UpdateDevice(int(64), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
                     elif 44908 not in SPAIDS:
-                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
+                        UpdateDevice(int(63), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
                     elif 44896 not in SPAIDS:
-                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
+                        UpdateDevice(int(61), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
                     elif 44897 not in SPAIDS:
-                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
+                        UpdateDevice(int(62), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
                     loop2 += 1
                     Unit = str(self.loop)+str(loop2)
                     sValue = each["rawValue"]
-                    nValue = 0
                     if each["unit"] == "bar" and sValue != -32768:
                         sValue = sValue / 10.0
                     elif each["unit"] == "°C" and sValue != -32768:
@@ -319,7 +317,7 @@ class BasePlugin:
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
 
-                    UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
+                    UpdateDevice(int(Unit), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
                 if self.loop == 16:
                     Domoticz.Log("System 1 Updated")
@@ -335,19 +333,18 @@ class BasePlugin:
                     for ID in Data:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
-                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
+                        UpdateDevice(int(64), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
                     elif 44908 not in SPAIDS:
-                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
+                        UpdateDevice(int(63), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
                     elif 44896 not in SPAIDS:
-                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
+                        UpdateDevice(int(61), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
                     elif 44897 not in SPAIDS:
-                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
+                        UpdateDevice(int(62), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
                     loop2 += 1
                     Unit = str(self.loop)+str(loop2)
                     sValue = each["rawValue"]
-                    nValue = 0
                     if each["unit"] == "bar" and sValue != -32768:
                         sValue = sValue / 10.0
                     elif each["unit"] == "°C" and sValue != -32768:
@@ -384,7 +381,7 @@ class BasePlugin:
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
 
-                    UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
+                    UpdateDevice(int(Unit), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
                 if self.loop == 16:
                     Domoticz.Log("System 2 Updated")
@@ -436,7 +433,7 @@ def onStart():
     global _plugin
     _plugin.onStart()
 
-def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
+def UpdateDevice(ID, sValue, Unit, Name, PID, Design, SystemUnitId):
 
     if PID == 10001:
         ID = 31
@@ -697,7 +694,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = ID + 130
     if (ID in Devices):
         if Devices[ID].sValue != sValue:
-            Devices[ID].Update(nValue, str(sValue))
+            Devices[ID].Update(0, str(sValue))
 
     if (ID not in Devices):
         if sValue == "-32768":
