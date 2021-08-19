@@ -87,6 +87,8 @@ logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(dir+'/NIBEUplink.log', maxBytes=1000000, backupCount=5)
 logger.addHandler(handler)
 
+categories = ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]
+
 class BasePlugin:
     enabled = False
 
@@ -189,14 +191,14 @@ class BasePlugin:
                     WriteDebug("Get Data 0")
                     self.loop = 0
                     self.SystemUnitId = 0
-                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]:
+                    for category in categories:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=0', 'Headers': headers})
 
                 elif Connection.Name == ("Get Data 1"):
                     WriteDebug("Get Data 1")
                     self.loop = 0
                     self.SystemUnitId = 1
-                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]:
+                    for category in categories:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=1', 'Headers': headers})
 
                 elif Connection.Name == ("Get Categories"):
