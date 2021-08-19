@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.81" author="flopp999" version="0.81" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.85" author="flopp999" version="0.85" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -87,6 +87,8 @@ logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(dir+'/NIBEUplink.log', maxBytes=1000000, backupCount=5)
 logger.addHandler(handler)
 
+categories = ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]
+
 class BasePlugin:
     enabled = False
 
@@ -115,37 +117,24 @@ class BasePlugin:
         if len(self.Ident) < 32:
             Domoticz.Log("Identifier too short")
             WriteDebug("Identifier too short")
-            self.Ident = CheckFile("Ident")
-        else:
-            WriteFile("Ident",self.Ident)
 
         if len(self.URL) < 10:
             Domoticz.Log("URL too short")
             WriteDebug("URL too short")
-            self.URL = CheckFile("URL")
-        else:
-            WriteFile("URL",self.URL)
 
         if len(self.Access) < 370:
             Domoticz.Log("Access Code too short")
             WriteDebug("Access Code too short")
-            self.Access = CheckFile("Access")
-        else:
-            WriteFile("Access",self.Access)
 
         if len(self.Secret) < 44:
             Domoticz.Log("Secret too short")
             WriteDebug("Secret too short")
-            self.Secret = CheckFile("Secret")
         else:
             self.Secret = self.Secret.replace("+", "%2B")
-            WriteFile("Secret",self.Secret)
 
         if len(self.Refresh) < 270:
             Domoticz.Log("Refresh too short")
             WriteDebug("Refresh too short")
-        else:
-            WriteFile("Refresh",self.Refresh)
 
         if self.Agree == "null":
             Domoticz.Log("You need to agree")
@@ -171,14 +160,9 @@ class BasePlugin:
 
     def onDisconnect(self, Connection):
         WriteDebug("onDisconnect called for connection '"+Connection.Name+"'.")
-        for x in self.Connections:
-            if Connection.Name in self.Connections:
-                self.Connections[Connection.Name] = Connection.Connected()
 
     def onConnect(self, Connection, Status, Description):
         WriteDebug("onConnect")
-        if Connection.Name not in self.Connections:
-            self.Connections[Connection.Name] = Connection.Connected()
         if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
                 headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
@@ -193,7 +177,7 @@ class BasePlugin:
                     data += "&scope=READSYSTEM"
                     Connection.Send({'Verb':'POST', 'URL': '/oauth/token', 'Headers': headers, 'Data': data})
 
-                if Connection.Name == ("Get Token"):
+                elif Connection.Name == ("Get Token"):
                     WriteDebug("Get Token")
                     if len(self.Refresh) > 50:
                         self.reftoken = self.Refresh
@@ -207,41 +191,41 @@ class BasePlugin:
                     WriteDebug("Get Data 0")
                     self.loop = 0
                     self.SystemUnitId = 0
-                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]:
+                    for category in categories:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=0', 'Headers': headers})
 
-                if Connection.Name == ("Get Data 1"):
+                elif Connection.Name == ("Get Data 1"):
                     WriteDebug("Get Data 1")
                     self.loop = 0
                     self.SystemUnitId = 1
-                    for category in ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]:
+                    for category in categories:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=1', 'Headers': headers})
 
-                if Connection.Name == ("Get Categories"):
+                elif Connection.Name == ("Get Categories"):
                         WriteDebug("Get Categories")
                         self.SystemUnitId = 0
                         while self.SystemUnitId < int(self.NoOfSystems):
                             Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
                             self.SystemUnitId += 1
 
-                if Connection.Name == ("Get SystemID"):
+                elif Connection.Name == ("Get SystemID"):
                         WriteDebug("Get SystemID")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/', 'Headers': headers})
 
-                if Connection.Name == ("Get NoOfSystems"):
+                elif Connection.Name == ("Get NoOfSystems"):
                         WriteDebug("Get NoOfSystems")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/units', 'Headers': headers})
 
-                if Connection.Name == ("Get Target"):
+                elif Connection.Name == ("Get Target"):
                         WriteDebug("Get Target")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/parameters?parameterIds=47398', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
-        Data = Data['Data'].decode('UTF-8')
-        Data = json.loads(Data)
 
         if (Status == 200) and self.Agree == "True":
+            Data = Data['Data'].decode('UTF-8')
+            Data = json.loads(Data)
 
             if Connection.Name == ("Get Refresh"):
                 self.reftoken = Data["refresh_token"]
@@ -251,7 +235,7 @@ class BasePlugin:
                 self.GetRefresh.Disconnect()
                 self.GetToken.Connect()
 
-            if Connection.Name == ("Get Categories"):
+            elif Connection.Name == ("Get Categories"):
                 for each in Data:
                     self.Categories.append(each["categoryId"])
                 requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(self.SystemID)+'&data='+str(self.Categories), timeout=2)
@@ -259,92 +243,85 @@ class BasePlugin:
                 self.GetCategories.Disconnect()
                 self.GetData.Connect()
 
-            if Connection.Name == ("Get SystemID"):
+            elif Connection.Name == ("Get SystemID"):
                 self.SystemID = str(Data["objects"][0]["systemId"])
                 self.GetSystemID.Disconnect()
                 self.GetNoOfSystems.Connect()
 
-            if Connection.Name == ("Get NoOfSystems"):
+            elif Connection.Name == ("Get NoOfSystems"):
                 Domoticz.Log("Systems found:"+str(len(Data)))
                 self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
                 self.GetNoOfSystems.Disconnect()
                 self.GetCategories.Connect()
 
-            if Connection.Name == ("Get Target"):
+            elif Connection.Name == ("Get Target"):
                 sValue = Data[0]["rawValue"]/10
-                nValue = 0
-                UpdateDevice(int(117), int(nValue), str(sValue), Data[0]["unit"], Data[0]["title"], Data[0]["parameterId"], Data[0]["designation"], 0)
+                UpdateDevice(int(117), str(sValue), Data[0]["unit"], Data[0]["title"], Data[0]["parameterId"], Data[0]["designation"], 0)
                 self.GetTarget.Disconnect()
 
-            if Connection.Name == ("Get Token"):
+            elif Connection.Name == ("Get Token"):
                 self.token = Data["access_token"]
-                with open(dir+'/NIBEUplink.ini') as jsonfile:
-                    data = json.load(jsonfile)
-                data["Config"][0]["Access"] = Data["access_token"]
-                with open(dir+'/NIBEUplink.ini', 'w') as outfile:
-                    json.dump(data, outfile, indent=4)
                 self.GetToken.Disconnect()
                 if self.SystemID == "":
                     self.GetSystemID.Connect()
                 else:
                     self.GetData.Connect()
 
-            if Connection.Name == ("Get Data 0"):
+            elif Connection.Name == ("Get Data 0"):
                 if self.loop == 6:
                     SPAIDS=[]
                     for ID in Data:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
-                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
+                        UpdateDevice(int(64), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
                     if 44908 not in SPAIDS:
-                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
+                        UpdateDevice(int(63), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
                     if 44896 not in SPAIDS:
-                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
+                        UpdateDevice(int(61), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
                     if 44897 not in SPAIDS:
-                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
+                        UpdateDevice(int(62), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
                     loop2 += 1
                     Unit = str(self.loop)+str(loop2)
                     sValue = each["rawValue"]
-                    nValue = 0
                     if each["unit"] == "bar" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "°C" and sValue != -32768:
+                    elif each["unit"] == "°C" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "kWh" and sValue != -32768:
+                    elif each["unit"] == "kWh" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "DM" and sValue != -32768:
+                    elif each["unit"] == "DM" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "l/m" and sValue != -32768:
+                    elif each["unit"] == "l/m" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "A" and each["title"] != "fuse size":
+                    elif each["unit"] == "A" and each["title"] != "fuse size":
                         sValue = sValue / 10.0
+                    elif each["unit"] == "öre/kWh":
+                        sValue = (sValue / 1000.0)
                     if each["title"] == "set max electrical add.":
                         sValue = sValue / 100.0
-                    if each["unit"] == "öre/kWh":
-                        sValue = (sValue / 1000.0)
-                    if each["title"] == "time factor":
+                    elif each["title"] == "time factor":
                         sValue = (sValue / 10.0)
                         each["title"] = "electrical time factor"
-                    if each["title"] == "electrical addition power":
+                    elif each["title"] == "electrical addition power":
                         sValue = (sValue / 100.0)
                     if each["parameterId"] == 44896:
                         sValue = (sValue / 10.0)
-                    if each["parameterId"] == 40121:
+                    elif each["parameterId"] == 40121:
+                        sValue = (sValue / 10.0)
+                    elif each["parameterId"] == 43144:
+                        sValue = (sValue / 10.0)
+                    elif each["parameterId"] == 43136:
+                        sValue = (sValue / 10.0)
+                    elif each["parameterId"] == 43305:
                         sValue = (sValue / 10.0)
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
-                    if each["parameterId"] == 43144:
-                        sValue = (sValue / 10.0)
-                    if each["parameterId"] == 43136:
-                        sValue = (sValue / 10.0)
-                    if each["parameterId"] == 43305:
-                        sValue = (sValue / 10.0)
 
-                    UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
+                    UpdateDevice(int(Unit), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
-                if self.loop == 16:
+                if self.loop == len(categories)-1:
                     Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
                     if self.NoOfSystems == 1:
@@ -352,64 +329,63 @@ class BasePlugin:
                     self.GetTarget.Connect()
 
 
-            if Connection.Name == ("Get Data 1"):
+            elif Connection.Name == ("Get Data 1"):
                 if self.loop == 6:
                     SPAIDS=[]
                     for ID in Data:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
-                        UpdateDevice(int(64), int(0), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
+                        UpdateDevice(int(64), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
                     if 44908 not in SPAIDS:
-                        UpdateDevice(int(63), int(0), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
+                        UpdateDevice(int(63), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
                     if 44896 not in SPAIDS:
-                        UpdateDevice(int(61), int(0), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
+                        UpdateDevice(int(61), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
                     if 44897 not in SPAIDS:
-                        UpdateDevice(int(62), int(0), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
+                        UpdateDevice(int(62), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
                     loop2 += 1
                     Unit = str(self.loop)+str(loop2)
                     sValue = each["rawValue"]
-                    nValue = 0
                     if each["unit"] == "bar" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "°C" and sValue != -32768:
+                    elif each["unit"] == "°C" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "kWh" and sValue != -32768:
+                    elif each["unit"] == "kWh" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "DM" and sValue != -32768:
+                    elif each["unit"] == "DM" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "l/m" and sValue != -32768:
+                    elif each["unit"] == "l/m" and sValue != -32768:
                         sValue = sValue / 10.0
-                    if each["unit"] == "A" and each["title"] != "fuse size":
+                    elif each["unit"] == "A" and each["title"] != "fuse size":
                         sValue = sValue / 10.0
+                    elif each["unit"] == "öre/kWh":
+                        sValue = (sValue / 1000.0)
                     if each["title"] == "set max electrical add.":
                         sValue = sValue / 100.0
-                    if each["unit"] == "öre/kWh":
-                        sValue = (sValue / 1000.0)
-                    if each["title"] == "time factor":
+                    elif each["title"] == "time factor":
                         sValue = (sValue / 10.0)
                         each["title"] = "electrical time factor"
-                    if each["title"] == "electrical addition power":
+                    elif each["title"] == "electrical addition power":
                         sValue = (sValue / 100.0)
                     if each["parameterId"] == 44896:
                         sValue = (sValue / 10.0)
-                    if each["parameterId"] == 40121:
+                    elif each["parameterId"] == 40121:
+                        sValue = (sValue / 10.0)
+                    elif each["parameterId"] == 43144:
+                        sValue = (sValue / 10.0)
+                    elif each["parameterId"] == 43136:
+                        sValue = (sValue / 10.0)
+                    elif each["parameterId"] == 43305:
+                        sValue = (sValue / 10.0)
+                    elif each["parameterId"] == 44701:
                         sValue = (sValue / 10.0)
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
-                    if each["parameterId"] == 43144:
-                        sValue = (sValue / 10.0)
-                    if each["parameterId"] == 43136:
-                        sValue = (sValue / 10.0)
-                    if each["parameterId"] == 43305:
-                        sValue = (sValue / 10.0)
-                    if each["parameterId"] == 44701:
-                        sValue = (sValue / 10.0)
 
-                    UpdateDevice(int(Unit), int(nValue), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
+                    UpdateDevice(int(Unit), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
-                if self.loop == 16:
+                if self.loop == len(categories)-1:
                     Domoticz.Log("System 2 Updated")
                     self.GetData1.Disconnect()
                     if self.NoOfSystems == 2:
@@ -423,10 +399,6 @@ class BasePlugin:
             WriteDebug("Status = "+str(Status))
             Domoticz.Error(str("Status "+str(Status)))
             Domoticz.Error(str(Data))
-            WriteDebug(str(self.SystemID))
-            WriteDebug(str(self.NoOfSystems))
-            WriteDebug(str(self.reftoken))
-            WriteDebug(str(self.token))
             if _plugin.GetRefresh.Connected():
                 _plugin.GetRefresh.Disconnect()
             if _plugin.GetToken.Connected():
@@ -463,7 +435,7 @@ def onStart():
     global _plugin
     _plugin.onStart()
 
-def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
+def UpdateDevice(ID, sValue, Unit, Name, PID, Design, SystemUnitId):
 
     if PID == 10001:
         ID = 31
@@ -724,7 +696,7 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = ID + 130
     if (ID in Devices):
         if Devices[ID].sValue != sValue:
-            Devices[ID].Update(nValue, str(sValue))
+            Devices[ID].Update(0, str(sValue))
 
     if (ID not in Devices):
         if sValue == "-32768":
@@ -775,38 +747,6 @@ def UpdateDevice(ID, nValue, sValue, Unit, Name, PID, Design, SystemUnitId):
             else:
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
 
-def CreateFile():
-    if not os.path.isfile(dir+'/NIBEUplink.ini'):
-        data = {}
-        data["Config"] = []
-        data["Config"].append({
-             "Access": "",
-             "Ident": "",
-             "Refresh": "",
-             "Secret": "",
-             "SystemID": "",
-             "URL": ""
-             })
-        with open(dir+'/NIBEUplink.ini', 'w') as outfile:
-            json.dump(data, outfile, indent=4)
-
-def CheckFile(Parameter):
-    if os.path.isfile(dir+'/NIBEUplink.ini'):
-        with open(dir+'/NIBEUplink.ini') as jsonfile:
-            data = json.load(jsonfile)
-            data = data["Config"][0][Parameter]
-            if data == "":
-                _plugin.AllSettings = False
-            else:
-                return data
-
-def WriteFile(Parameter,text):
-    CreateFile()
-    with open(dir+'/NIBEUplink.ini') as jsonfile:
-        data = json.load(jsonfile)
-    data["Config"][0][Parameter] = text
-    with open(dir+'/NIBEUplink.ini', 'w') as outfile:
-        json.dump(data, outfile, indent=4)
 
 def CheckInternet():
     WriteDebug("Entered CheckInternet")
@@ -816,21 +756,21 @@ def CheckInternet():
         WriteDebug("Internet is OK")
         return True
     except:
-        if _plugin.GetRefresh.Connected():
+        if _plugin.GetRefresh.Connected() or _plugin.GetRefresh.Connecting():
             _plugin.GetRefresh.Disconnect()
-        if _plugin.GetToken.Connected():
+        if _plugin.GetToken.Connected() or _plugin.GetToken.Connecting():
             _plugin.GetToken.Disconnect()
-        if _plugin.GetData.Connected():
+        if _plugin.GetData.Connected() or _plugin.GetData.Connecting():
             _plugin.GetData.Disconnect()
-        if _plugin.GetData1.Connected():
+        if _plugin.GetData1.Connected() or _plugin.GetData1.Connecting():
             _plugin.GetData1.Disconnect()
-        if _plugin.GetCategories.Connected():
+        if _plugin.GetCategories.Connected() or _plugin.GetCategories.Connecting():
             _plugin.GetCategories.Disconnect()
-        if _plugin.GetSystemID.Connected():
+        if _plugin.GetSystemID.Connected() or _plugin.GetSystemID.Connecting():
             _plugin.GetSystemID.Disconnect()
-        if _plugin.GetNoOfSystems.Connected():
+        if _plugin.GetNoOfSystems.Connected() or _plugin.GetNoOfSystems.Connecting():
             _plugin.GetNoOfSystems.Disconnect()
-        if _plugin.GetTarget.Connected():
+        if _plugin.GetTarget.Connected() or _plugin.GetTarget.Connecting():
             _plugin.GetTarget.Disconnect()
 
         WriteDebug("Internet is not available")
