@@ -274,11 +274,11 @@ class BasePlugin:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
                         UpdateDevice(int(64), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
-                    elif 44908 not in SPAIDS:
+                    if 44908 not in SPAIDS:
                         UpdateDevice(int(63), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
-                    elif 44896 not in SPAIDS:
+                    if 44896 not in SPAIDS:
                         UpdateDevice(int(61), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
-                    elif 44897 not in SPAIDS:
+                    if 44897 not in SPAIDS:
                         UpdateDevice(int(62), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
@@ -336,11 +336,11 @@ class BasePlugin:
                         SPAIDS.append(ID["parameterId"])
                     if 10069 not in SPAIDS:
                         UpdateDevice(int(64), str(0), "", "price of electricity", 10069, "", self.SystemUnitId)
-                    elif 44908 not in SPAIDS:
+                    if 44908 not in SPAIDS:
                         UpdateDevice(int(63), str(0), "", "smart price adaption status", 44908, "", self.SystemUnitId)
-                    elif 44896 not in SPAIDS:
+                    if 44896 not in SPAIDS:
                         UpdateDevice(int(61), str(0), "", "comfort mode heating", 44896, "", self.SystemUnitId)
-                    elif 44897 not in SPAIDS:
+                    if 44897 not in SPAIDS:
                         UpdateDevice(int(62), str(0), "", "comfort mode hot water", 44897, "", self.SystemUnitId)
                 loop2 = 0
                 for each in Data:
