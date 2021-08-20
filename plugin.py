@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.85" author="flopp999" version="0.85" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.86" author="flopp999" version="0.86" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
@@ -99,6 +99,7 @@ class BasePlugin:
         return
 
     def onStart(self):
+        Domoticz.Debugging(1)
         WriteDebug("===onStart===")
         self.Ident = Parameters["Mode4"]
         self.URL = Parameters["Address"]
@@ -140,11 +141,10 @@ class BasePlugin:
             Domoticz.Log("You need to agree")
             WriteDebug("Not agree")
             self.Agree == "False"
-
-        if 'NIBEUplink' not in Images:
-            Domoticz.Image('NIBEUplink.zip').Create()
-
-        self.ImageID = Images["NIBEUplink"].ID
+        if os.path.isfile(dir+'/NIBEUplink.zip'):
+            if 'NIBEUplink' not in Images:
+                Domoticz.Image('NIBEUplink.zip').Create()
+            self.ImageID = Images["NIBEUplink"].ID
 
         if self.Agree == "True":
             self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
@@ -285,6 +285,7 @@ class BasePlugin:
                     loop2 += 1
                     Unit = str(self.loop)+str(loop2)
                     sValue = each["rawValue"]
+                    # unit
                     if each["unit"] == "bar" and sValue != -32768:
                         sValue = sValue / 10.0
                     elif each["unit"] == "°C" and sValue != -32768:
@@ -299,6 +300,7 @@ class BasePlugin:
                         sValue = sValue / 10.0
                     elif each["unit"] == "öre/kWh":
                         sValue = (sValue / 1000.0)
+                    # title
                     if each["title"] == "set max electrical add.":
                         sValue = sValue / 100.0
                     elif each["title"] == "time factor":
@@ -306,6 +308,7 @@ class BasePlugin:
                         each["title"] = "electrical time factor"
                     elif each["title"] == "electrical addition power":
                         sValue = (sValue / 100.0)
+                    # parameterId
                     if each["parameterId"] == 44896:
                         sValue = (sValue / 10.0)
                     elif each["parameterId"] == 40121:
@@ -316,6 +319,7 @@ class BasePlugin:
                         sValue = (sValue / 10.0)
                     elif each["parameterId"] == 43305:
                         sValue = (sValue / 10.0)
+                    # other
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
 
@@ -324,9 +328,12 @@ class BasePlugin:
                 if self.loop == len(categories)-1:
                     Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
+                    Domoticz.Log("före")
                     if self.NoOfSystems == 1:
                         _plugin.FirstRun = False
+                    Domoticz.Log("after")
                     self.GetTarget.Connect()
+                    Domoticz.Log("sist")
 
 
             elif Connection.Name == ("Get Data 1"):
