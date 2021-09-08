@@ -99,7 +99,7 @@ class BasePlugin:
         return
 
     def onStart(self):
-        Domoticz.Debugging(1)
+#        Domoticz.Debugging(1)
         WriteDebug("===onStart===")
         self.Ident = Parameters["Mode4"]
         self.URL = Parameters["Address"]
@@ -162,7 +162,9 @@ class BasePlugin:
         WriteDebug("onDisconnect called for connection '"+Connection.Name+"'.")
 
     def onConnect(self, Connection, Status, Description):
+        Domoticz.Log("jakob")
         WriteDebug("onConnect")
+        Domoticz.Log("lisa")
         if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
                 headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
@@ -217,7 +219,9 @@ class BasePlugin:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/units', 'Headers': headers})
 
                 elif Connection.Name == ("Get Target"):
+                        Domoticz.Log("Gett")
                         WriteDebug("Get Target")
+                        Domoticz.Log("OU")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/parameters?parameterIds=47398', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
@@ -256,7 +260,9 @@ class BasePlugin:
 
             elif Connection.Name == ("Get Target"):
                 sValue = Data[0]["rawValue"]/10
+                Domoticz.Log(str(sValue))
                 UpdateDevice(int(117), str(sValue), Data[0]["unit"], Data[0]["title"], Data[0]["parameterId"], Data[0]["designation"], 0)
+                Domoticz.Log("last")
                 self.GetTarget.Disconnect()
 
             elif Connection.Name == ("Get Token"):
@@ -322,7 +328,8 @@ class BasePlugin:
                     # other
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
-
+                    Domoticz.Log(str(each["title"]))
+                    Domoticz.Log(str(sValue))
                     UpdateDevice(int(Unit), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
                 if self.loop == len(categories)-1:
@@ -332,7 +339,7 @@ class BasePlugin:
                     if self.NoOfSystems == 1:
                         _plugin.FirstRun = False
                     Domoticz.Log("after")
-                    self.GetTarget.Connect()
+                  #  self.GetTarget.Connect()
                     Domoticz.Log("sist")
 
 
@@ -423,6 +430,23 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
+        if _plugin.GetRefresh.Connected() or _plugin.GetRefresh.Connecting():
+            _plugin.GetRefresh.Disconnect()
+        if _plugin.GetToken.Connected() or _plugin.GetToken.Connecting():
+            _plugin.GetToken.Disconnect()
+        if _plugin.GetData.Connected() or _plugin.GetData.Connecting():
+            _plugin.GetData.Disconnect()
+        if _plugin.GetData1.Connected() or _plugin.GetData1.Connecting():
+            _plugin.GetData1.Disconnect()
+        if _plugin.GetCategories.Connected() or _plugin.GetCategories.Connecting():
+            _plugin.GetCategories.Disconnect()
+        if _plugin.GetSystemID.Connected() or _plugin.GetSystemID.Connecting():
+            _plugin.GetSystemID.Disconnect()
+        if _plugin.GetNoOfSystems.Connected() or _plugin.GetNoOfSystems.Connecting():
+            _plugin.GetNoOfSystems.Disconnect()
+        if _plugin.GetTarget.Connected() or _plugin.GetTarget.Connecting():
+            _plugin.GetTarget.Disconnect()
+
         if self.Agree == "True":
             self.Count += 1
             if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
