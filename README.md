@@ -34,4 +34,4 @@ Copy everything after "...code=" and before "&state...", the code above is just 
 Above example have access code "ndfhj3u38ufhswhnerjqa5zEyN-RmBgkTCc"
 
 
-Support me with a coffee https://www.buymeacoffee.com/flopp999 or use my Tibber link https://tibber.com/se/invite/8af85f51
+Support me with a coffee https://www.buymeacoffee.com/flopp999
