@@ -3,13 +3,11 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.86" author="flopp999" version="0.86" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.88" author="flopp999" version="0.88" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
         <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
-        <h1>To use this plugin you need to agree to send data to me. I will use the data to develop the plugin so it will fit all NIBE systems</h1>
-        <h3>You can see what data I have collect by follow this link. I will onlt collect data once after startup. It will include all your parameters, your SystemID and you categories.</h3>
-        <h3>&<a href="https://rhematic-visitors.000webhostapp.com/[your systemid]">https://rhematic-visitors.000webhostapp.com/[your systemid]</a></h3>
+        <h2>or use my Tibber link &<a href="https://tibber.com/se/invite/8af85f51">https://tibber.com/se/invite/8af85f51</a></h2><br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
             <li>..</li>
@@ -41,18 +39,20 @@
         <h3>Configuration</h3>
     </description>
     <params>
-        <param field="Mode5" label="Agree to send data to developer of this plugin" width="70px" required="true">
+        <param field="Mode4" label="Uplink Identifier" width="320px" required="true" default="Identifier"/>
+        <param field="Mode2" label="Uplink Secret" width="350px" required="true" default="Secret"/>
+        <param field="Address" label="Callback URL" width="950px" required="true" default="URL"/>
+        <param field="Mode1" label="Access Code" width="350px" required="true" default="Access Code"/>
+        <param field="Mode3" label="Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
+        <param field="Mode5" label="Update every" width="100px">
             <options>
-                <option label="Yes" value=True />
-                <option label="No" value=False />
+                <option label="1 minute" value=6 />
+                <option label="5 minutes" value=30 />
+                <option label="10 minutes" value=60 />
+                <option label="15 minutes" value=90 />
             </options>
         </param>
-        <param field="Mode4" label="NIBE Uplink Identifier" width="320px" required="true" default="Identifier"/>
-        <param field="Mode2" label="NIBE Uplink Secret" width="350px" required="true" default="Secret"/>
-        <param field="Address" label="NIBE Callback URL" width="950px" required="true" default="URL"/>
-        <param field="Mode1" label="NIBE Access Code" width="350px" required="true" default="Access Code"/>
-        <param field="Mode3" label="NIBE Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
-        <param field="Mode6" label="Debug to file (Nibe.log)" width="70px">
+        <param field="Mode6" label="Debug to file (Nibe.log)" width="50px">
             <options>
                 <option label="Yes" value="Yes" />
                 <option label="No" value="No" />
@@ -106,14 +106,13 @@ class BasePlugin:
         self.Access = Parameters["Mode1"]
         self.Secret = Parameters["Mode2"]
         self.Refresh = Parameters["Mode3"]
+        self.Update = Parameters["Mode5"]
+        Domoticz.Log(str(self.Update))
         self.SystemID = ""
         self.NoOfSystems = ""
         self.SystemUnitId = 0
         self.FirstRun = True
-        self.Agree = Parameters["Mode5"]
         self.AllSettings = True
-        self.Categories = []
-        self.Connections = {}
 
         if len(self.Ident) < 32:
             Domoticz.Log("Identifier too short")
@@ -137,34 +136,26 @@ class BasePlugin:
             Domoticz.Log("Refresh too short")
             WriteDebug("Refresh too short")
 
-        if self.Agree == "null":
-            Domoticz.Log("You need to agree")
-            WriteDebug("Not agree")
-            self.Agree == "False"
         if os.path.isfile(dir+'/NIBEUplink.zip'):
             if 'NIBEUplink' not in Images:
                 Domoticz.Image('NIBEUplink.zip').Create()
             self.ImageID = Images["NIBEUplink"].ID
 
-        if self.Agree == "True":
-            self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            if len(self.Refresh) < 50 and self.AllSettings == True:
-                self.GetRefresh.Connect()
-            self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            self.GetData = Domoticz.Connection(Name="Get Data 0", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            self.GetData1 = Domoticz.Connection(Name="Get Data 1", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            self.GetNoOfSystems = Domoticz.Connection(Name="Get NoOfSystems", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
-            self.GetTarget = Domoticz.Connection(Name="Get Target", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        if len(self.Refresh) < 50 and self.AllSettings == True:
+            self.GetRefresh.Connect()
+        self.GetToken = Domoticz.Connection(Name="Get Token", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetData = Domoticz.Connection(Name="Get Data 0", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetData1 = Domoticz.Connection(Name="Get Data 1", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetNoOfSystems = Domoticz.Connection(Name="Get NoOfSystems", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetTarget = Domoticz.Connection(Name="Get Target", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onDisconnect(self, Connection):
         WriteDebug("onDisconnect called for connection '"+Connection.Name+"'.")
 
     def onConnect(self, Connection, Status, Description):
-        Domoticz.Log("jakob")
         WriteDebug("onConnect")
-        Domoticz.Log("lisa")
         if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
                 headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
@@ -203,13 +194,6 @@ class BasePlugin:
                     for category in categories:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories/'+category+'?systemUnitId=1', 'Headers': headers})
 
-                elif Connection.Name == ("Get Categories"):
-                        WriteDebug("Get Categories")
-                        self.SystemUnitId = 0
-                        while self.SystemUnitId < int(self.NoOfSystems):
-                            Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
-                            self.SystemUnitId += 1
-
                 elif Connection.Name == ("Get SystemID"):
                         WriteDebug("Get SystemID")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/', 'Headers': headers})
@@ -219,15 +203,13 @@ class BasePlugin:
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/units', 'Headers': headers})
 
                 elif Connection.Name == ("Get Target"):
-                        Domoticz.Log("Gett")
                         WriteDebug("Get Target")
-                        Domoticz.Log("OU")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/parameters?parameterIds=47398', 'Headers': headers})
 
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
 
-        if (Status == 200) and self.Agree == "True":
+        if (Status == 200):
             Data = Data['Data'].decode('UTF-8')
             Data = json.loads(Data)
 
@@ -239,14 +221,6 @@ class BasePlugin:
                 self.GetRefresh.Disconnect()
                 self.GetToken.Connect()
 
-            elif Connection.Name == ("Get Categories"):
-                for each in Data:
-                    self.Categories.append(each["categoryId"])
-                requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(self.SystemID)+'&data='+str(self.Categories), timeout=2)
-                self.Categories = []
-                self.GetCategories.Disconnect()
-                self.GetData.Connect()
-
             elif Connection.Name == ("Get SystemID"):
                 self.SystemID = str(Data["objects"][0]["systemId"])
                 self.GetSystemID.Disconnect()
@@ -256,13 +230,11 @@ class BasePlugin:
                 Domoticz.Log("Systems found:"+str(len(Data)))
                 self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
                 self.GetNoOfSystems.Disconnect()
-                self.GetCategories.Connect()
+                self.GetData.Connect()
 
             elif Connection.Name == ("Get Target"):
-                sValue = Data[0]["rawValue"]/10
-                Domoticz.Log(str(sValue))
+                sValue = Data[0]["rawValue"]/10.0
                 UpdateDevice(int(117), str(sValue), Data[0]["unit"], Data[0]["title"], Data[0]["parameterId"], Data[0]["designation"], 0)
-                Domoticz.Log("last")
                 self.GetTarget.Disconnect()
 
             elif Connection.Name == ("Get Token"):
@@ -328,20 +300,14 @@ class BasePlugin:
                     # other
                     if int(Unit) > 70 and int(Unit) < 80:
                         sValue = each["displayValue"]
-                    Domoticz.Log(str(each["title"]))
-                    Domoticz.Log(str(sValue))
                     UpdateDevice(int(Unit), str(sValue), each["unit"], each["title"], each["parameterId"], each["designation"], self.SystemUnitId)
                 self.loop += 1
                 if self.loop == len(categories)-1:
                     Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
-                    Domoticz.Log("före")
                     if self.NoOfSystems == 1:
                         _plugin.FirstRun = False
-                    Domoticz.Log("after")
-                  #  self.GetTarget.Connect()
-                    Domoticz.Log("sist")
-
+                    self.GetTarget.Connect()
 
             elif Connection.Name == ("Get Data 1"):
                 if self.loop == 6:
@@ -407,8 +373,6 @@ class BasePlugin:
 
 
 
-        elif self.Agree == "False":
-            Domoticz.Log("You must agree")
         else:
             WriteDebug("Status = "+str(Status))
             Domoticz.Error(str("Status "+str(Status)))
@@ -421,8 +385,6 @@ class BasePlugin:
                 _plugin.GetData.Disconnect()
             if _plugin.GetSystemID.Connected():
                 _plugin.GetSystemID.Disconnect()
-            if _plugin.GetCategories.Connected():
-                _plugin.GetCategories.Disconnect()
             if _plugin.GetTarget.Connected():
                 _plugin.GetTarget.Disconnect()
             if _plugin.GetNoOfSystems.Connected():
@@ -438,8 +400,6 @@ class BasePlugin:
             _plugin.GetData.Disconnect()
         if _plugin.GetData1.Connected() or _plugin.GetData1.Connecting():
             _plugin.GetData1.Disconnect()
-        if _plugin.GetCategories.Connected() or _plugin.GetCategories.Connecting():
-            _plugin.GetCategories.Disconnect()
         if _plugin.GetSystemID.Connected() or _plugin.GetSystemID.Connecting():
             _plugin.GetSystemID.Disconnect()
         if _plugin.GetNoOfSystems.Connected() or _plugin.GetNoOfSystems.Connecting():
@@ -447,17 +407,14 @@ class BasePlugin:
         if _plugin.GetTarget.Connected() or _plugin.GetTarget.Connecting():
             _plugin.GetTarget.Disconnect()
 
-        if self.Agree == "True":
-            self.Count += 1
-            if self.Count == 6 and not self.GetToken.Connected() and not self.GetToken.Connecting():
-                self.GetToken.Connect()
-                WriteDebug("onHeartbeat")
-                self.Count = 0
-            if self.Count == 3 and self.NoOfSystems == 2 and not self.GetToken.Connected() and not self.GetToken.Connecting():
+        self.Count += 1
+        if self.Count >= int(self.Update) and not self.GetToken.Connected() and not self.GetToken.Connecting():
+            self.GetToken.Connect()
+            WriteDebug("onHeartbeat")
+            self.Count = 0
+        if self.Count >= int(self.Update) + 3 and self.NoOfSystems == 2 and not self.GetToken.Connected() and not self.GetToken.Connecting():
                 self.GetData1.Connect()
                 WriteDebug("Data1")
-        else:
-            Domoticz.Log("Please agree")
 
 global _plugin
 _plugin = BasePlugin()
@@ -720,9 +677,6 @@ def UpdateDevice(ID, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 114
     elif PID == 48914:
         ID = 89
-    else:
-        if _plugin.FirstRun == True and ID != 72 and ID != 73 and ID != 74:
-            requests.post(url='https://rhematic-visitors.000webhostapp.com/a.php?file='+str(_plugin.SystemID)+'&data='+str(PID)+';'+str(ID)+';'+str(sValue)+';'+str(Unit)+';'+str(Name)+';'+str(Design)+';'+str(SystemUnitId), timeout=2)
     if SystemUnitId == 1:
         ID = ID + 130
     if (ID in Devices):
@@ -795,8 +749,6 @@ def CheckInternet():
             _plugin.GetData.Disconnect()
         if _plugin.GetData1.Connected() or _plugin.GetData1.Connecting():
             _plugin.GetData1.Disconnect()
-        if _plugin.GetCategories.Connected() or _plugin.GetCategories.Connecting():
-            _plugin.GetCategories.Disconnect()
         if _plugin.GetSystemID.Connected() or _plugin.GetSystemID.Connecting():
             _plugin.GetSystemID.Disconnect()
         if _plugin.GetNoOfSystems.Connected() or _plugin.GetNoOfSystems.Connecting():
