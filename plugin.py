@@ -397,7 +397,9 @@ class BasePlugin:
             WriteDebug("Status = "+str(Status))
             Domoticz.Error(str("Status "+str(Status)))
             Domoticz.Error(str(Data))
-            if _plugin.GetRefresh.Connected():
+            if _plugin.GetCategories.Connected():
+                _plugin.GetCategories.Disconnect()
+             if _plugin.GetRefresh.Connected():
                 _plugin.GetRefresh.Disconnect()
             if _plugin.GetToken.Connected():
                 _plugin.GetToken.Disconnect()
@@ -412,6 +414,8 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
+        if _plugin.GetCategories.Connected() or _plugin.GetCategories.Connecting():
+            _plugin.GetCategories.Disconnect()
         if _plugin.GetRefresh.Connected() or _plugin.GetRefresh.Connecting():
             _plugin.GetRefresh.Disconnect()
         if _plugin.GetToken.Connected() or _plugin.GetToken.Connecting():
@@ -761,6 +765,8 @@ def CheckInternet():
         WriteDebug("Internet is OK")
         return True
     except:
+        if _plugin.GetCategories.Connected() or _plugin.GetCategories.Connecting():
+            _plugin.GetCategories.Disconnect()
         if _plugin.GetRefresh.Connected() or _plugin.GetRefresh.Connecting():
             _plugin.GetRefresh.Disconnect()
         if _plugin.GetToken.Connected() or _plugin.GetToken.Connecting():
