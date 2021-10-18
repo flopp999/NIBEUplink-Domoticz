@@ -26,6 +26,8 @@
             <li>STATUS</li>
             <li>SYSTEM_1</li>
             <li>SYSTEM_2</li>
+            <li>SYSTEM_3</li>
+            <li>SYSTEM_4</li>
             <li>SYSTEM_INFO</li>
             <li>VENTILATION</li>
         </ul>
@@ -38,9 +40,9 @@
         <h3>Configuration</h3>
     </description>
     <params>
-        <param field="Mode4" label="Uplink Identifier" width="320px" required="true" default="Identifier"/>
+        <param field="Mode4" label="Uplink Identifier" width="350px" required="true" default="Identifier"/>
         <param field="Mode2" label="Uplink Secret" width="350px" required="true" default="Secret"/>
-        <param field="Address" label="Callback URL" width="950px" required="true" default="URL"/>
+        <param field="Address" label="Callback URL" width="350px" required="true" default="URL"/>
         <param field="Mode1" label="Access Code" width="350px" required="true" default="Access Code"/>
         <param field="Mode3" label="Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
         <param field="Port" label="Update every" width="100px">
@@ -399,7 +401,7 @@ class BasePlugin:
             Domoticz.Error(str(Data))
             if _plugin.GetCategories.Connected():
                 _plugin.GetCategories.Disconnect()
-             if _plugin.GetRefresh.Connected():
+            if _plugin.GetRefresh.Connected():
                 _plugin.GetRefresh.Disconnect()
             if _plugin.GetToken.Connected():
                 _plugin.GetToken.Disconnect()
@@ -703,9 +705,6 @@ def UpdateDevice(ID, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 89
     if SystemUnitId == 1:
         ID = ID + 130
-    if (ID in Devices):
-        if Devices[ID].sValue != sValue:
-            Devices[ID].Update(0, str(sValue))
 
     if (ID not in Devices):
         if sValue == "-32768":
@@ -756,6 +755,9 @@ def UpdateDevice(ID, sValue, Unit, Name, PID, Design, SystemUnitId):
             else:
                 Domoticz.Device(Name=Name, Unit=ID, TypeName="Custom", Options={"Custom": "0;"+Unit}, Used=1, Image=(_plugin.ImageID), Description="ParameterID="+str(PID)+"\nDesignation="+str(Design)).Create()
 
+    if (ID in Devices):
+        if Devices[ID].sValue != sValue:
+            Devices[ID].Update(0, str(sValue))
 
 def CheckInternet():
     WriteDebug("Entered CheckInternet")
