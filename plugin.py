@@ -8,10 +8,6 @@
         <h3>NIBE Uplink is used to read data from api.nibeuplink.com</h3><br/>
         <h3>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h3><br/>
         <h3>or use my Tibber link &<a href="https://tibber.com/se/invite/8af85f51">https://tibber.com/se/invite/8af85f51</a></h3><br/>
-        <h3>Features</h3>
-        <ul style="list-style-type:square">
-            <li>..</li>
-        </ul>
         <h3>Categories that will be fetched, if they exist</h3>
         <ul style="list-style-type:square">
             <li>ACTIVE_COOLING_2_PIPE</li>
@@ -38,6 +34,7 @@
         <br/>
         <h3>How to get your Access Code?</h3>
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#access-code">https://github.com/flopp999/NIBEUplink-Domoticz#access-code</a></h4>
+        <br/>
         <h3>Configuration</h3>
     </description>
     <params>
