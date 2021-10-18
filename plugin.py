@@ -5,9 +5,9 @@
 """
 <plugin key="NIBEUplink" name="NIBE Uplink 0.88" author="flopp999" version="0.88" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
-        <h2>NIBE Uplink is used to read data from api.nibeuplink.com</h2><br/>
-        <h2>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h2><br/>
-        <h2>or use my Tibber link &<a href="https://tibber.com/se/invite/8af85f51">https://tibber.com/se/invite/8af85f51</a></h2><br/>
+        <h3>NIBE Uplink is used to read data from api.nibeuplink.com</h3><br/>
+        <h3>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h3><br/>
+        <h3>or use my Tibber link &<a href="https://tibber.com/se/invite/8af85f51">https://tibber.com/se/invite/8af85f51</a></h3><br/>
         <h3>Features</h3>
         <ul style="list-style-type:square">
             <li>..</li>
@@ -16,6 +16,7 @@
         <ul style="list-style-type:square">
             <li>ACTIVE_COOLING_2_PIPE</li>
             <li>ADDITION</li>
+            <li>AHPS</li>
             <li>AUX_IN_OUT</li>
             <li>CPR_INFO_EP14</li>
             <li>DEFROSTING</li>
@@ -34,6 +35,7 @@
         </ul>
         <h3>How to get your Identifier, Secret and URL?</h3>
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url">https://github.com/flopp999/NIBEUplink-Domoticz#identifier-secret-and-callback-url</a></h4>
+        <br/>
         <h3>How to get your Access Code?</h3>
         <h4>&<a href="https://github.com/flopp999/NIBEUplink-Domoticz#access-code">https://github.com/flopp999/NIBEUplink-Domoticz#access-code</a></h4>
         <h3>Configuration</h3>
@@ -44,12 +46,18 @@
         <param field="Address" label="Callback URL" width="950px" required="true" default="URL"/>
         <param field="Mode1" label="Access Code" width="350px" required="true" default="Access Code"/>
         <param field="Mode3" label="Refresh Token" width="350px" default="Copy Refresh Token from Log to here" required="true"/>
-        <param field="Mode5" label="Update every" width="100px">
+        <param field="Port" label="Update every" width="100px">
             <options>
                 <option label="1 minute" value=6 />
                 <option label="5 minutes" value=30 />
                 <option label="10 minutes" value=60 />
                 <option label="15 minutes" value=90 />
+            </options>
+        </param>
+        <param field="Mode5" label="Show categories" width="50px">
+            <options>
+                <option label="Yes" value="Yes" />
+                <option label="No" value="No" />
             </options>
         </param>
         <param field="Mode6" label="Debug to file (Nibe.log)" width="50px">
@@ -87,7 +95,7 @@ logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(dir+'/NIBEUplink.log', maxBytes=1000000, backupCount=5)
 logger.addHandler(handler)
 
-categories = ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1"]
+categories = ["AUX_IN_OUT", "STATUS", "CPR_INFO_EP14", "VENTILATION", "SYSTEM_1", "ADDITION", "SMART_PRICE_ADAPTION", "SYSTEM_INFO", "SYSTEM_2", "HEAT_METER", "ACTIVE_COOLING_2_PIPE", "PASSIVE_COOLING_INTERNAL", "PASSIVE_COOLING_2_PIPE", "DEFROSTING", "SMART_ENERGY_SOURCE_PRICES", "EME", "HTS1", "AHPS"]
 
 class BasePlugin:
     enabled = False
@@ -102,12 +110,13 @@ class BasePlugin:
 #        Domoticz.Debugging(1)
         WriteDebug("===onStart===")
         self.Ident = Parameters["Mode4"]
+        self.ShowCategories = Parameters["Mode5"]
         self.URL = Parameters["Address"]
         self.Access = Parameters["Mode1"]
         self.Secret = Parameters["Mode2"]
         self.Refresh = Parameters["Mode3"]
-        self.Update = Parameters["Mode5"]
-        Domoticz.Log(str(self.Update))
+        self.Update = Parameters["Port"]
+        self.Categories = []
         self.SystemID = ""
         self.NoOfSystems = ""
         self.SystemUnitId = 0
@@ -150,6 +159,7 @@ class BasePlugin:
         self.GetSystemID = Domoticz.Connection(Name="Get SystemID", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetNoOfSystems = Domoticz.Connection(Name="Get NoOfSystems", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         self.GetTarget = Domoticz.Connection(Name="Get Target", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
+        self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onDisconnect(self, Connection):
         WriteDebug("onDisconnect called for connection '"+Connection.Name+"'.")
@@ -206,6 +216,15 @@ class BasePlugin:
                         WriteDebug("Get Target")
                         Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/parameters?parameterIds=47398', 'Headers': headers})
 
+                elif Connection.Name == ("Get Categories"):
+                        WriteDebug("Get Categories")
+                        self.SystemUnitId = 0
+                        while self.SystemUnitId < int(self.NoOfSystems):
+                            Connection.Send({'Verb':'GET', 'URL': '/api/v1/systems/'+self.SystemID+'/serviceinfo/categories?systemUnitId='+str(self.SystemUnitId), 'Headers': headers})
+                            self.SystemUnitId += 1
+
+
+
     def onMessage(self, Connection, Data):
         Status = int(Data["Status"])
 
@@ -230,6 +249,8 @@ class BasePlugin:
                 Domoticz.Log("Systems found:"+str(len(Data)))
                 self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
                 self.GetNoOfSystems.Disconnect()
+                if self.FirstRun == True and self.ShowCategories == "Yes":
+                    self.GetCategories.Connect()
                 self.GetData.Connect()
 
             elif Connection.Name == ("Get Target"):
@@ -244,6 +265,12 @@ class BasePlugin:
                     self.GetSystemID.Connect()
                 else:
                     self.GetData.Connect()
+
+            elif Connection.Name == ("Get Categories"):
+                for each in Data:
+                    self.Categories.append(each["categoryId"])
+                Domoticz.Log(str(self.Categories))
+                self.GetCategories.Disconnect()
 
             elif Connection.Name == ("Get Data 0"):
                 if self.loop == 6:
@@ -305,8 +332,6 @@ class BasePlugin:
                 if self.loop == len(categories)-1:
                     Domoticz.Log("System 1 Updated")
                     self.GetData.Disconnect()
-                    if self.NoOfSystems == 1:
-                        _plugin.FirstRun = False
                     self.GetTarget.Connect()
 
             elif Connection.Name == ("Get Data 1"):
@@ -368,8 +393,6 @@ class BasePlugin:
                 if self.loop == len(categories)-1:
                     Domoticz.Log("System 2 Updated")
                     self.GetData1.Disconnect()
-                    if self.NoOfSystems == 2:
-                        _plugin.FirstRun = False
 
 
 
