@@ -1,7 +1,7 @@
 Support me with a coffee https://www.buymeacoffee.com/flopp999 or use my Tibber link https://tibber.com/se/invite/8af85f51
 ---
 Create a folder with name "NIBEUplink" in "domoticz/plugins"  
-Put plugin.py, requirements.txt in that folder
+Put plugin.py, requirements.txt and NIBEUplink.zip in that folder
 
 or
 

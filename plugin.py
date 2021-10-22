@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.88" author="flopp999" version="0.88" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.89" author="flopp999" version="0.89" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h3>NIBE Uplink is used to read data from api.nibeuplink.com</h3><br/>
         <h3>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h3><br/>
@@ -72,20 +72,24 @@
 import Domoticz
 
 Package = True
+MissingPackage = []
 
 try:
     import requests, json, os, logging
 except ImportError as e:
+    MissingPackage.append(e)
     Package = False
 
 try:
     from logging.handlers import RotatingFileHandler
 except ImportError as e:
+    MissingPackage.append(e)
     Package = False
 
 try:
     from datetime import datetime
 except ImportError as e:
+    MissingPackage.append(e)
     Package = False
 
 dir = os.path.dirname(os.path.realpath(__file__))
@@ -148,6 +152,10 @@ class BasePlugin:
             if 'NIBEUplink' not in Images:
                 Domoticz.Image('NIBEUplink.zip').Create()
             self.ImageID = Images["NIBEUplink"].ID
+
+        if Package is False:
+            Domoticz.Error("Missing packages")
+            Domoticz.Error(str(MissingPackages))
 
         self.GetRefresh = Domoticz.Connection(Name="Get Refresh", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
         if len(self.Refresh) < 50 and self.AllSettings == True:
@@ -438,7 +446,7 @@ class BasePlugin:
             self.GetToken.Connect()
             WriteDebug("onHeartbeat")
             self.Count = 0
-        if self.Count >= int(self.Update) + 3 and self.NoOfSystems == 2 and not self.GetToken.Connected() and not self.GetToken.Connecting():
+        if self.Count >= int(self.Update) / 2 and self.NoOfSystems == 2 and not self.GetToken.Connected() and not self.GetToken.Connecting():
                 self.GetData1.Connect()
                 WriteDebug("Data1")
 
