@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.89" author="flopp999" version="0.89" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.90" author="flopp999" version="0.90" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h3>NIBE Uplink is used to read data from api.nibeuplink.com</h3><br/>
         <h3>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h3><br/>
@@ -169,10 +169,10 @@ class BasePlugin:
         self.GetCategories = Domoticz.Connection(Name="Get Categories", Transport="TCP/IP", Protocol="HTTPS", Address="api.nibeuplink.com", Port="443")
 
     def onDisconnect(self, Connection):
-        WriteDebug("onDisconnect called for connection '"+Connection.Name+"'.")
+        WriteDebug("Disconnect called for connection '"+Connection.Name+"'.")
 
     def onConnect(self, Connection, Status, Description):
-        WriteDebug("onConnect")
+        WriteDebug("Connect called for connection '"+Connection.Name+"'.")
         if CheckInternet() == True and self.AllSettings == True:
             if (Status == 0):
                 headers = { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'Host': 'api.nibeuplink.com'}
@@ -244,30 +244,39 @@ class BasePlugin:
                 if len(self.Refresh) < 50:
                     Domoticz.Log("Copy token to Setup->Hardware->NibeUplink->Refresh Token:")
                     Domoticz.Log(str(self.reftoken))
-                self.GetRefresh.Disconnect()
+                if self.GetRefresh.Connected() or self.GetRefresh.Connecting():
+                    self.GetRefresh.Disconnect()
                 self.GetToken.Connect()
 
             elif Connection.Name == ("Get SystemID"):
                 self.SystemID = str(Data["objects"][0]["systemId"])
-                self.GetSystemID.Disconnect()
+                if self.GetSystemID.Connected() or self.GetSystemID.Connecting():
+                    self.GetSystemID.Disconnect()
                 self.GetNoOfSystems.Connect()
 
             elif Connection.Name == ("Get NoOfSystems"):
                 Domoticz.Log("Systems found:"+str(len(Data)))
                 self.NoOfSystems = len(Data) # will be 1 higher then SystemUnitId
-                self.GetNoOfSystems.Disconnect()
+                if self.GetNoOfSystems.Connected() or self.GetNoOfSystems.Connecting():
+                    self.GetNoOfSystems.Disconnect()
                 if self.FirstRun == True and self.ShowCategories == "Yes":
                     self.GetCategories.Connect()
                 self.GetData.Connect()
 
             elif Connection.Name == ("Get Target"):
+                WriteDebug("inne i Message Target1")
                 sValue = Data[0]["rawValue"]/10.0
+                WriteDebug("inne i Message Target2")
                 UpdateDevice(int(117), str(sValue), Data[0]["unit"], Data[0]["title"], Data[0]["parameterId"], Data[0]["designation"], 0)
-                self.GetTarget.Disconnect()
+                WriteDebug("inne i Message Target3")
+                if self.GetTarget.Connected() or self.GetTarget.Connecting():
+                    self.GetTarget.Disconnect()
+                WriteDebug("inne i Message Target4")
 
             elif Connection.Name == ("Get Token"):
                 self.token = Data["access_token"]
-                self.GetToken.Disconnect()
+                if self.GetToken.Connected() or self.GetToken.Connecting():
+                    self.GetToken.Disconnect()
                 if self.SystemID == "":
                     self.GetSystemID.Connect()
                 else:
@@ -277,7 +286,8 @@ class BasePlugin:
                 for each in Data:
                     self.Categories.append(each["categoryId"])
                 Domoticz.Log(str(self.Categories))
-                self.GetCategories.Disconnect()
+                if self.GetCategories.Connected() or self.GetCategories.Connecting():
+                    self.GetCategories.Disconnect()
 
             elif Connection.Name == ("Get Data 0"):
                 if self.loop == 6:
@@ -338,8 +348,11 @@ class BasePlugin:
                 self.loop += 1
                 if self.loop == len(categories)-1:
                     Domoticz.Log("System 1 Updated")
-                    self.GetData.Disconnect()
-                    self.GetTarget.Connect()
+                    if self.GetData.Connected() or self.GetData.Connecting():
+                        self.GetData.Disconnect()
+                    WriteDebug("Innan Target")
+#                    self.GetTarget.Connect()
+                    WriteDebug("Efter Target")
 
             elif Connection.Name == ("Get Data 1"):
                 if self.loop == 6:
@@ -399,7 +412,8 @@ class BasePlugin:
                 self.loop += 1
                 if self.loop == len(categories)-1:
                     Domoticz.Log("System 2 Updated")
-                    self.GetData1.Disconnect()
+                    if self.GetData1.Connected() or self.GetData1.Connecting():
+                        self.GetData1.Disconnect()
 
 
 
@@ -424,6 +438,7 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
+        WriteDebug("Heart")
         if _plugin.GetCategories.Connected() or _plugin.GetCategories.Connecting():
             _plugin.GetCategories.Disconnect()
         if _plugin.GetRefresh.Connected() or _plugin.GetRefresh.Connecting():
