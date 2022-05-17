@@ -728,7 +728,9 @@ def UpdateDevice(ID, sValue, Unit, Name, PID, Design, SystemUnitId):
         ID = 89
     if SystemUnitId == 1:
         ID = ID + 130
-
+    if ID == 256:                                                                                                                                                                                           
+        return
+    
     if (ID not in Devices):
         if sValue == "-32768":
             Used = 0
