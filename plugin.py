@@ -335,6 +335,8 @@ class BasePlugin:
                         sValue = (sValue / 10.0)
                     elif each["parameterId"] == 40121:
                         sValue = (sValue / 10.0)
+                    elif each["parameterId"] == 41026:
+                        sValue = (sValue / 10.0)  
                     elif each["parameterId"] == 43144:
                         sValue = (sValue / 10.0)
                     elif each["parameterId"] == 43136:
