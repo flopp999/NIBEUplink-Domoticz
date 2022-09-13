@@ -3,7 +3,7 @@
 # Author: flopp999
 #
 """
-<plugin key="NIBEUplink" name="NIBE Uplink 0.92" author="flopp999" version="0.92" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
+<plugin key="NIBEUplink" name="NIBE Uplink 0.93" author="flopp999" version="0.93" wikilink="https://github.com/flopp999/NIBEUplink-Domoticz" externallink="https://www.nibeuplink.com">
     <description>
         <h3>NIBE Uplink is used to read data from api.nibeuplink.com</h3><br/>
         <h3>Support me with a coffee &<a href="https://www.buymeacoffee.com/flopp999">https://www.buymeacoffee.com/flopp999</a></h3><br/>
@@ -425,21 +425,22 @@ class BasePlugin:
             WriteDebug("Status = "+str(Status))
             Domoticz.Error(str("Status "+str(Status)))
             Domoticz.Error(str(Data))
-            if _plugin.GetCategories.Connected():
+            if _plugin.GetCategories.Connected() or _plugin.GetCategories.Connecting():
                 _plugin.GetCategories.Disconnect()
-            if _plugin.GetRefresh.Connected():
+            if _plugin.GetRefresh.Connected() or _plugin.GetRefresh.Connecting():
                 _plugin.GetRefresh.Disconnect()
-            if _plugin.GetToken.Connected():
+            if _plugin.GetToken.Connected() or _plugin.GetToken.Connecting():
                 _plugin.GetToken.Disconnect()
-            if _plugin.GetData.Connected():
+            if _plugin.GetData.Connected() or _plugin.GetData.Connecting():
                 _plugin.GetData.Disconnect()
-            if _plugin.GetSystemID.Connected():
+            if _plugin.GetData1.Connected() or _plugin.GetData1.Connecting():
+                _plugin.GetData1.Disconnect()
+            if _plugin.GetSystemID.Connected() or _plugin.GetSystemID.Connecting():
                 _plugin.GetSystemID.Disconnect()
-            if _plugin.GetTarget.Connected():
-                _plugin.GetTarget.Disconnect()
-            if _plugin.GetNoOfSystems.Connected():
+            if _plugin.GetNoOfSystems.Connected() or _plugin.GetNoOfSystems.Connecting():
                 _plugin.GetNoOfSystems.Disconnect()
-
+            if _plugin.GetTarget.Connected() or _plugin.GetTarget.Connecting():
+                _plugin.GetTarget.Disconnect()
 
     def onHeartbeat(self):
         WriteDebug("Heart")
